@@ -1,0 +1,22 @@
+{
+  "name": "rebuildjs",
+  "version": "0.0.1",
+  "description": "Js version of c++ rebuild enviorment",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "rebuild",
+    "ide",
+    "tool"
+  ],
+  "author": "Shakthi Prasad G S",
+  "license": "MIT",
+  "dependencies": {
+    "readline-ui": "^2.2.3"
+  },
+  "devDependencies": {
+    "browserify": "^14.4.0"
+  }
+}
