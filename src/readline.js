@@ -18,7 +18,8 @@ var historyCompleter = {
 	}
 };
 
-var self;
+var sessionRecorder = null;
+var self = null;
 
 
 function historyReplace(responce) {
@@ -58,15 +59,29 @@ exports.getLine = function(options) {
 		output: process.stdout
 	});
 
-	if (options && options.history) {
+	if (options) {
+		if (options.history) {
 
-		historyCompleter = options.history;
+			historyCompleter = options.history;
+		}
+		if (options.recordSession) {
+			if (sessionRecorder == null) {
+				sessionRecorder = [];
+			}
+
+		}
+		if (options.prompt) {
+			rl.setPrompt(options.prompt);
+			rl.prompt();
+		}
+
+
 	}
+
 
 
 	self = rl;
 
-	self.setPrompt('');
 	historyCompleter.onEditBegin();
 
 
@@ -74,6 +89,14 @@ exports.getLine = function(options) {
 	var ttyWriteOrig = rl._ttyWrite.bind(rl);
 
 	rl._ttyWrite = function(d, key) {
+
+		if (sessionRecorder) {
+			sessionRecorder.push({
+				data: d,
+				key: key
+			});
+		}
+
 
 		if (key.name == 'up') {
 
@@ -101,4 +124,9 @@ exports.getLine = function(options) {
 		});
 
 	});
+}
+
+
+exports.getRecordedSession = function(argument) {
+	return sessionRecorder;
 }

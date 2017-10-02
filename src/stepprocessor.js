@@ -1,19 +1,46 @@
 var lineHistory = require('./history.js');
 
 
-var echoProcessor = function(rebuild,history) {
+var stepProcessor = function(rebuild, history) {
 
 	this.rebuild = rebuild;
-	if(history)
+	if (history)
 		this.lineHistory = history;
-	else		
+	else
 		this.lineHistory = new lineHistory();
 
+}
 
+stepProcessor.prototype.onEnter = function() {
+
+};
+
+stepProcessor.prototype.getPrompt = function() {
+	return "";
+};
+
+stepProcessor.prototype.setPrompt = function(aprompt) {
+	prompt = aprompt;
+	return this.rebuild.getPrompt() + aprompt;
 
 }
 
 
+
+stepProcessor.prototype.onExit = function() {
+
+};
+
+
+
+var echoProcessor = function(rebuild, history) {
+
+	stepProcessor.call(this, rebuild, history);
+
+	this.setPrompt('rebuildx}');
+}
+
+echoProcessor.prototype = Object.create(stepProcessor.prototype);
 
 
 
@@ -22,7 +49,10 @@ echoProcessor.prototype.runStep = function() {
 	var self = this;
 	return new Promise(function(resolve, reject) {
 
-		self.rebuild.getLine({history:self.lineHistory}).then(function(answer) {
+		self.rebuild.getLine({
+			history: self.lineHistory,
+			prompt: self.setPrompt('rebuildx}')
+		}).then(function(answer) {
 
 
 			if (answer != "") {
@@ -48,3 +78,4 @@ echoProcessor.prototype.runStep = function() {
 
 
 exports.echoProcessor = echoProcessor;
+exports.stepProcessor = stepProcessor;
