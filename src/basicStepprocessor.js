@@ -1,8 +1,12 @@
+
+
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
-const readProcessors = require('./readStepProcessor.js');
+const readProcessors = require('./readStepProcessor.js').readStepProcessor;
 const parser = require('./parser.js').parser;
 const VarTable = require('./varTable.js');
 const ast = require("./ast.js");
+
+
 
 function BasicStepProcessor(rebuild, history, superVarTable) {
 
@@ -34,7 +38,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 				var sentence = parser.parse(answer);
 
-				console.log("rebuild>", sentence);
+				console.info("rebuild>", sentence);
 				self.process(sentence);
 
 			} else {
@@ -73,9 +77,9 @@ BasicStepProcessor.prototype.process = function(sentence) {
 
 	} else if (sentence instanceof ast.readStatement) {
 
-		this.rebuild.addNewProcessor(this.rebuild, null, this.varTable);
+		this.rebuild.addNewProcessor(new readProcessors(this.rebuild, sentence, this.varTable));
 	}
 }
 
 
-module.exports  = BasicStepProcessor;
+exports.BasicStepProcessor  = BasicStepProcessor;

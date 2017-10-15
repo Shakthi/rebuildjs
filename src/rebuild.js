@@ -6,19 +6,18 @@ Array.prototype.empty = function() {
 	return (this.length == 0);
 };
 
+
+var promptManager = require('./PromptManager.js');
+
 var fs = require('fs');
 var readline = require('./readline.js');
 var history = require('./history.js');
-var stepprocessor = require('./basicStepprocessor.js');
+var stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
 
 var processorStack = [];
 var lineHistory = new history();
-var lastPromptList = [];
-var lastPromptString = ""
-
-
 
 exports.runStep = function() {
 
@@ -29,7 +28,8 @@ exports.runStep = function() {
 	}
 
 	if (processorStack.last().isDead) {
-		processorStack.pop();
+
+		this.exitProcessing();
 		return Promise.resolve("stack pop");
 	}
 
@@ -45,21 +45,30 @@ exports.getLine = function(options) {
 }
 
 exports.addNewProcessor = function(argument) {
-	if (!processorStack.empty())
-		lastPromptList.push(processorStack.top().getPrompt());
 
-	lastPromptString = "";
-	lastPromptList.forEach(function(argument) {
-		lastPromptString += argument;
-	});
+	if (!processorStack.empty())
+		promptManager.push(processorStack.top().getPrompt());
 
 
 	processorStack.push(argument);
 
 }
 
+exports.exitProcessing = function() {
+
+
+	promptManager.pop();
+	processorStack.pop();
+
+}
+
 exports.getPrompt = function() {
-	return lastPromptString;
+	return promptManager.getPrompt();
+}
+
+
+exports.setPrompt = function(prompt) {
+	return promptManager.setPrompt(prompt);
 }
 
 
@@ -88,7 +97,7 @@ exports.load = function() {
 		lineHistory.fromJson(obj.lineHistory);
 
 	} catch (e) {
-		
+
 
 	}
 

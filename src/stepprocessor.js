@@ -1,81 +1,81 @@
  var lineHistory = require('./history.js');
 
 
-var stepProcessor = function(rebuild, history) {
+ var stepProcessor = function(rebuild, history) {
 
-	this.rebuild = rebuild;
-	if (history)
-		this.lineHistory = history;
-	else
-		this.lineHistory = new lineHistory();
+ 	this.rebuild = rebuild;
+ 	if (history)
+ 		this.lineHistory = history;
+ 	else
+ 		this.lineHistory = new lineHistory();
 
-}
+ }
 
-stepProcessor.prototype.onEnter = function() {
+ stepProcessor.prototype.onEnter = function() {
 
-};
+ };
 
-stepProcessor.prototype.getPrompt = function() {
-	return "";
-};
+ stepProcessor.prototype.getPrompt = function() {
+ 	return prompt;
+ };
 
-stepProcessor.prototype.setPrompt = function(aprompt) {
-	prompt = aprompt;
-	return this.rebuild.getPrompt() + aprompt;
+ stepProcessor.prototype.setPrompt = function(aprompt) {
+ 	prompt = aprompt;
+ 	return this.rebuild.setPrompt(aprompt);
 
-}
-
-
-
-stepProcessor.prototype.onExit = function() {
-
-};
+ }
 
 
 
-var echoProcessor = function(rebuild, history) {
+ stepProcessor.prototype.onExit = function() {
 
-	stepProcessor.call(this, rebuild, history);
-
-	this.setPrompt('rebuildx}');
-}
-
-echoProcessor.prototype = Object.create(stepProcessor.prototype);
+ };
 
 
 
-echoProcessor.prototype.runStep = function() {
+ var echoProcessor = function(rebuild, history) {
 
-	var self = this;
-	return new Promise(function(resolve, reject) {
+ 	stepProcessor.call(this, rebuild, history);
 
-		self.rebuild.getLine({
-			history: self.lineHistory,
-			prompt: self.setPrompt('rebuildx}')
-		}).then(function(answer) {
+ 	this.setPrompt('rebuildx}');
+ }
 
-
-			if (answer != "") {
-
-				self.lineHistory.add(answer);
-				console.log("rebuild>" + answer);
-
-			} else {
-
-				self.isDead = true;
-
-			}
-
-			resolve();
-
-		});
-
-	});
+ echoProcessor.prototype = Object.create(stepProcessor.prototype);
 
 
 
-};
+ echoProcessor.prototype.runStep = function() {
+
+ 	var self = this;
+ 	return new Promise(function(resolve, reject) {
+
+ 		self.rebuild.getLine({
+ 			history: self.lineHistory,
+ 			prompt: self.setPrompt('rebuildx}')
+ 		}).then(function(answer) {
 
 
-exports.echoProcessor = echoProcessor;
-exports.stepProcessor = stepProcessor;
+ 			if (answer != "") {
+
+ 				self.lineHistory.add(answer);
+ 				console.log("rebuild>" + answer);
+
+ 			} else {
+
+ 				self.isDead = true;
+
+ 			}
+
+ 			resolve();
+
+ 		});
+
+ 	});
+
+
+
+ };
+
+
+ exports.echoProcessor = echoProcessor;
+ exports.stepProcessor = stepProcessor;

@@ -1,14 +1,10 @@
+const superClass = require('./stepprocessor.js').stepProcessor;
 
-
-debugger;
-
-
-const superClass = require('./basicStepprocessor.js');
-
-var readStepProcessor = function(rebuild, history, superVarTable) {
-	superClass.call(this, rebuild, history, superVarTable)
+var readStepProcessor = function(rebuild, statement, superVarTable) {
+	superClass.call(this, rebuild, null, superVarTable)
 	this.statement = statement;
 	this.prompt = this.statement.prompt;
+	this.varTable = superVarTable;
 
 }
 
@@ -18,18 +14,28 @@ readStepProcessor.prototype = Object.create(superClass.prototype);
 readStepProcessor.prototype.runStep = function() {
 
 	if (!this.prompt) {
-		this.prompt = "input";
+		this.prompt = "input ";
+		
+		for (var i = 0; i < this.statement.elements.length; i++) {
+			this.prompt += ("'" + this.statement.elements[i] + "'");
+			if (i != this.statement.elements.length - 1) {
+				this.prompt += ',';
+			}
+		}
+
+		this.prompt += '}';
 	}
+
+
 
 	var self = this;
 	return new Promise(function(resolve, reject) {
 
 		self.rebuild.getLine({
 			history: self.lineHistory,
-			prompt: self.setPrompt('rebuildx}input}')
+			prompt: self.setPrompt(self.prompt)
 		}).then(function(answer) {
 
-			debugger;
 			if (answer != "") {
 
 				var inputval = eval(answer);
@@ -38,15 +44,17 @@ readStepProcessor.prototype.runStep = function() {
 
 					for (var i = 0; i < self.statement.elements.length; i++) {
 
-						if(i >= inputval.length)
+						if (i >= inputval.length)
 							break;
-						self.varTable.setEntry(self.statement.elements[i],inputval[i]);
+						self.varTable.setEntry(self.statement.elements[i], inputval[i]);
 
 					}
 
-				}else{
-						self.varTable.setEntry(self.statement.elements[0],inputval);					
+				} else {
+					self.varTable.setEntry(self.statement.elements[0], inputval);
 				}
+
+				self.isDead = true;
 
 
 
@@ -66,4 +74,4 @@ readStepProcessor.prototype.runStep = function() {
 };
 
 
-module.exports = readStepProcessor;
+exports.readStepProcessor = readStepProcessor;
