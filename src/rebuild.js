@@ -9,7 +9,7 @@ Array.prototype.empty = function() {
 var fs = require('fs');
 var readline = require('./readline.js');
 var history = require('./history.js');
-var stepprocessor = require('./stepprocessor.js');
+var stepprocessor = require('./basicStepprocessor.js');
 
 
 
@@ -66,7 +66,7 @@ exports.getPrompt = function() {
 
 exports.init = function() {
 
-	this.addNewProcessor(new stepprocessor.echoProcessor(exports, lineHistory));
+	this.addNewProcessor(new stepprocessor(exports, lineHistory));
 }
 
 exports.save = function() {
@@ -88,6 +88,7 @@ exports.load = function() {
 		lineHistory.fromJson(obj.lineHistory);
 
 	} catch (e) {
+		
 
 	}
 

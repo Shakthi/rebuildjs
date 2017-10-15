@@ -1,4 +1,4 @@
-var lineHistory = require('./history.js');
+ var lineHistory = require('./history.js');
 
 
 var stepProcessor = function(rebuild, history) {
