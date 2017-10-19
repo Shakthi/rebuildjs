@@ -33,20 +33,14 @@ testreadline.getLine = function(options) {
 }
 
 
-exports.rebuildTest = function() {
-return;
+exports.selftest = function( ) {
 
-	var oldReadline = currentReadlile;
-	testReadline.init(lineHistory.getContent());
-	currentReadlile = testReadline;
-
-	this.addNewProcessor(new stepprocessor(exports, lineHistory));
-
-
+	debugger;
+	var rebuild =this;
 
 	function runloop() {
 
-		exports.runStep().then(function(message) {
+		rebuild.runStep().then(function(message) {
 
 			runloop();
 
@@ -63,13 +57,6 @@ return;
 
 
 	runloop();
-
-	while (processorStack.length > 1) {
-		this.runStep();
-	}
-
-
-	currentReadlile = oldReadline;
 }
 
 

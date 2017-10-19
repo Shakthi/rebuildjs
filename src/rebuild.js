@@ -11,7 +11,7 @@ const promptManager = require('./PromptManager.js');
 
 const fs = require('fs');
 const readline = require('./readline.js');
-const testReadline = require('./testBed.js');
+const testBed = require('./testBed.js');
 const history = require('./history.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
@@ -97,6 +97,7 @@ exports.save = function() {
 }
 
 
+
 exports.load = function() {
 	try {
 
@@ -116,41 +117,13 @@ function getFileSave() {
 	return process.env.HOME + "/.rebuildjs.alldb.json";
 }
 
+exports.setReadline = function(areadline) {
 
-
-exports.selfTest = function() {
-	var oldReadline = currentReadlile;
-	testReadline.init(lineHistory.getContent());
-	currentReadlile = testReadline;
-
-	this.addNewProcessor(new stepprocessor(exports, lineHistory));
-
-
-
-	function runloop() {
-
-		exports.runStep().then(function(message) {
-
-			runloop();
-
-		}).catch(function(reason) {
-
-			if (reason == "empty processor") {
-				console.log("Finished ");
-				rebuild.save();
-			} else
-				throw (reason);
-		})
-
-	}
-
-
-	runloop();
-
-	while (processorStack.length > 1) {
-		this.runStep();
-	}
-
-
-	currentReadlile = oldReadline;
+	var old = readline;
+	readline = areadline;
+	return old;
 }
+
+
+exports.selfTest = testBed.selftest;
+
