@@ -7,17 +7,19 @@ Array.prototype.empty = function() {
 };
 
 
-var promptManager = require('./PromptManager.js');
+const promptManager = require('./PromptManager.js');
 
-var fs = require('fs');
-var readline = require('./readline.js');
-var history = require('./history.js');
-var stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
+const fs = require('fs');
+const readline = require('./readline.js');
+const testReadline = require('./testBed.js');
+const history = require('./history.js');
+const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
+const processorStack = [];
+const lineHistory = new history();
 
-var processorStack = [];
-var lineHistory = new history();
+var currentReadlile = readline;
 
 exports.runStep = function() {
 
@@ -41,7 +43,7 @@ exports.runStep = function() {
 
 exports.getLine = function(options) {
 	options.recordSession = true;
-	return readline.getLine(options);
+	return currentReadlile.getLine(options);
 }
 
 exports.addNewProcessor = function(argument) {
@@ -51,6 +53,7 @@ exports.addNewProcessor = function(argument) {
 
 
 	processorStack.push(argument);
+	argument.onEnter();
 
 }
 
@@ -58,6 +61,8 @@ exports.exitProcessing = function() {
 
 
 	promptManager.pop();
+	processorStack.top().onExit();
+
 	processorStack.pop();
 
 }
@@ -77,6 +82,8 @@ exports.init = function() {
 
 	this.addNewProcessor(new stepprocessor(exports, lineHistory));
 }
+
+
 
 exports.save = function() {
 
@@ -107,4 +114,43 @@ exports.load = function() {
 
 function getFileSave() {
 	return process.env.HOME + "/.rebuildjs.alldb.json";
+}
+
+
+
+exports.selfTest = function() {
+	var oldReadline = currentReadlile;
+	testReadline.init(lineHistory.getContent());
+	currentReadlile = testReadline;
+
+	this.addNewProcessor(new stepprocessor(exports, lineHistory));
+
+
+
+	function runloop() {
+
+		exports.runStep().then(function(message) {
+
+			runloop();
+
+		}).catch(function(reason) {
+
+			if (reason == "empty processor") {
+				console.log("Finished ");
+				rebuild.save();
+			} else
+				throw (reason);
+		})
+
+	}
+
+
+	runloop();
+
+	while (processorStack.length > 1) {
+		this.runStep();
+	}
+
+
+	currentReadlile = oldReadline;
 }

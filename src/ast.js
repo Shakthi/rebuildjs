@@ -16,6 +16,20 @@ class printStatement extends Statement {
 		this.elements = elements;
 	}
 
+	toCode() {
+		var code = "print ";
+		for (var i = 0; i < this.elements.length; i++) {
+
+			if (i != 0)
+				code += ", ";
+
+			code += this.elements[i].toCode();
+		}
+
+		//code += ";"
+		return code;
+	}
+
 };
 
 
@@ -27,6 +41,21 @@ class readStatement extends Statement {
 		this.prompt = prompt;
 	}
 
+	toCode() {
+		var code = "read ";
+		for (var i = 0; i < elements.length; i++) {
+
+			if (i != 0)
+				code += ", ";
+			code += elements[i].toCode();
+		}
+
+
+
+		//code += ";"
+		return code;
+	}
+
 };
 
 
@@ -36,6 +65,11 @@ class letStatement extends Statement {
 		super();
 		this.varName = varName;
 		this.expression = anexpression;
+	}
+
+	toCode() {
+		var code = "let " + this.varName + " = " + this.expression.toCode();
+		return code;
 	}
 
 };
@@ -61,10 +95,10 @@ class expression {
 			case '/':
 				return this.left.evaluate(context) / this.right.evaluate(context);
 				break;
-			case 'UMINIUS':
-				return -this.argument;
+			case 'UMINUS':
+				return -this.argument.evaluate(context);
 			case 'GROUP':
-				return this.argument;
+				return this.argument.evaluate(context);
 
 		}
 
@@ -80,6 +114,22 @@ class unaryExpression extends expression {
 	constructor(operator, left) {
 		super();
 		this.argument = left;
+		this.operator = operator;
+	}
+
+	toCode() {
+
+		var code = "";
+
+		switch (this.operator) {
+			case 'UMINUS':
+				code = '-' + this.argument.toCode();
+				break;
+			case 'GROUP':
+				code = '(' + this.argument.toCode() + ')';
+				break;
+		}
+		return code;
 	}
 }
 
@@ -94,6 +144,11 @@ class binaryExpression extends expression {
 		this.right = right;
 
 	}
+
+	toCode() {
+		var code = this.left.toCode() +' '+ this.operator +' '+ this.right.toCode();
+		return code;
+	}
 }
 
 
@@ -103,6 +158,11 @@ class terminalExpression extends expression {
 		super();
 		this.terminalValue = terminalValue;
 
+	}
+
+	toCode() {
+		var code = this.terminalValue;
+		return code;
 	}
 
 }
@@ -117,6 +177,11 @@ class getExpression extends expression {
 
 	evaluate(context) {
 		return context.getEntry(this.varName);
+	}
+
+	toCode() {
+		var code = varName;
+		return code;
 	}
 
 

@@ -1,5 +1,3 @@
-
-
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const readProcessors = require('./readStepProcessor.js').readStepProcessor;
 const parser = require('./parser.js').parser;
@@ -36,10 +34,16 @@ BasicStepProcessor.prototype.runStep = function() {
 
 				self.lineHistory.add(answer);
 
-				var sentence = parser.parse(answer);
+				try{
+					var sentence = parser.parse(answer);
+					console.log(sentence.toCode());
+					self.process(sentence);
 
-				console.info("rebuild>", sentence);
-				self.process(sentence);
+				} catch (e) {
+
+					console.error(e);
+
+				}
 
 			} else {
 
@@ -82,4 +86,4 @@ BasicStepProcessor.prototype.process = function(sentence) {
 }
 
 
-exports.BasicStepProcessor  = BasicStepProcessor;
+exports.BasicStepProcessor = BasicStepProcessor;

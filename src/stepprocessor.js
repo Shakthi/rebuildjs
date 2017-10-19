@@ -58,7 +58,6 @@
  			if (answer != "") {
 
  				self.lineHistory.add(answer);
- 				console.log("rebuild>" + answer);
 
  			} else {
 

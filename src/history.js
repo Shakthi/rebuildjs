@@ -40,6 +40,10 @@ lineHistory.prototype.onEditEnd = function() {
 	history.pop('');
 };
 
+lineHistory.prototype.getContent = function() {
+	return history;
+};
+
 
 lineHistory.prototype.add = function(entry) {
 	if (history.length) {

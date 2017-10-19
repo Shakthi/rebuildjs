@@ -11,9 +11,9 @@ var basicStatmentFun = "\n" +
 
 
 var grammar = {
-    "options": {
-        "debug": "true"
-    },
+    // "options": {
+    //     "debug": "true"
+    // },
     "lex": {
         "macros": {
             "digit": "[0-9]",

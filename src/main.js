@@ -6,6 +6,8 @@ function main(argument) {
 	rebuild.load();
 	rebuild.init();
 
+	rebuild.selfTest();
+
 	function runloop() {
 
 		rebuild.runStep().then(function(message) {
