@@ -33,12 +33,16 @@ testreadline.getLine = function(options) {
 }
 
 
-exports.selftest = function( ) {
+exports.selftest = function() {
 
-	debugger;
-	var rebuild =this;
 
-	function runloop() {
+	var rebuild = this;
+
+
+	testreadline.init(rebuild.lineHistory.getContent());
+	var oldReadline = rebuild.setReadline(testreadline);
+
+	var runloop = function() {
 
 		rebuild.runStep().then(function(message) {
 
@@ -47,16 +51,20 @@ exports.selftest = function( ) {
 		}).catch(function(reason) {
 
 			if (reason == "empty processor") {
-				console.log("Finished ");
-				rebuild.save();
-			} else
-				throw (reason);
+				rebuild.console.log("Finished ");
+				rebuild.setReadline(oldReadline);
+
+			} else {
+
+			}
 		})
 
 	}
 
 
 	runloop();
+
+
 }
 
 

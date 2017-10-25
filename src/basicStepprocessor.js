@@ -29,19 +29,25 @@ BasicStepProcessor.prototype.runStep = function() {
 			prompt: self.setPrompt('rebuildx}')
 		}).then(function(answer) {
 
-
 			if (answer != "") {
 
 				self.lineHistory.add(answer);
 
-				try{
+				try {
 					var sentence = parser.parse(answer);
-					console.log(sentence.toCode());
+					this.rebuild.console.log(sentence.toCode());
 					self.process(sentence);
 
 				} catch (e) {
 
-					console.error(e);
+					var expected = e.hash.expected;
+					var output = 'Error expected:';
+					expected.forEach(function(argument) {
+						output += argument;
+						output += ' ';
+					})
+
+					self.rebuild.console.log(output);
 
 				}
 
@@ -73,7 +79,7 @@ BasicStepProcessor.prototype.process = function(sentence) {
 
 			output += sentence.elements[i].evaluate(this.varTable);
 		}
-		console.log(output);
+		this.rebuild.console.log(output);
 
 	} else if (sentence instanceof ast.letStatement) {
 

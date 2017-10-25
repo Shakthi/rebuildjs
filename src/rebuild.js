@@ -14,6 +14,7 @@ const readline = require('./readline.js');
 const testBed = require('./testBed.js');
 const history = require('./history.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
+const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
@@ -21,6 +22,8 @@ const lineHistory = new history();
 
 var currentReadlile = readline;
 
+exports.lineHistory = lineHistory;
+exports.console = consolewrapper;
 exports.runStep = function() {
 
 
@@ -120,10 +123,9 @@ function getFileSave() {
 exports.setReadline = function(areadline) {
 
 	var old = readline;
-	readline = areadline;
+	currentReadlile = areadline;
 	return old;
 }
 
 
 exports.selfTest = testBed.selftest;
-
