@@ -32,6 +32,16 @@ class printStatement extends Statement {
 
 };
 
+class endStatement extends Statement {
+	constructor(elements, prompt) {
+		super();
+	}
+	toCode() {
+
+		return "end";
+	}
+};
+
 
 class readStatement extends Statement {
 
@@ -146,7 +156,7 @@ class binaryExpression extends expression {
 	}
 
 	toCode() {
-		var code = this.left.toCode() +' '+ this.operator +' '+ this.right.toCode();
+		var code = this.left.toCode() + ' ' + this.operator + ' ' + this.right.toCode();
 		return code;
 	}
 }
@@ -196,3 +206,4 @@ exports.binaryExpression = binaryExpression;
 exports.letStatement = letStatement;
 exports.readStatement = readStatement;
 exports.printStatement = printStatement;
+exports.endStatement = endStatement;

@@ -5,10 +5,11 @@ var historyCompleter;
 var historyArray;
 var index = -1;
 
+const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
 testreadline.init = function(ahistoryArray) {
-	historyArray = ahistoryArray;
+	historyArray = ahistoryArray.slice(0);
 }
 
 testreadline.getLine = function(options) {
@@ -23,8 +24,10 @@ testreadline.getLine = function(options) {
 	historyCompleter.onEditBegin();
 	historyCompleter.onEditEnd();
 
-	if (index >= historyArray.length)
-		return Promise.resolve("end");
+	if (index >= historyArray.length) {
+		debugger;
+		return Promise.reject("endTest");
+	}
 
 
 	return Promise.resolve(historyArray[index]);
@@ -35,34 +38,40 @@ testreadline.getLine = function(options) {
 
 exports.selftest = function() {
 
-
 	var rebuild = this;
 
+	return new Promise(function(resolve, reject) {
 
-	testreadline.init(rebuild.lineHistory.getContent());
-	var oldReadline = rebuild.setReadline(testreadline);
+		testreadline.init(rebuild.lineHistory.getContent());
+		var oldReadline = rebuild.setReadline(testreadline);
 
-	var runloop = function() {
+		var runloop = function() {
 
-		rebuild.runStep().then(function(message) {
+			rebuild.runStep().then(function(message) {
 
-			runloop();
+				runloop();
 
-		}).catch(function(reason) {
+			}).catch(function(reason) {
 
-			if (reason == "empty processor") {
-				rebuild.console.log("Finished ");
-				rebuild.setReadline(oldReadline);
+				if (reason == "endTest") {
+					rebuild.console.log("Finished test ");
+					rebuild.setReadline(oldReadline);
 
-			} else {
+					resolve("endTest");
 
-			}
-		})
+				} else {
+					
+					reject(reason);
+				}
+			})
 
-	}
+		}
+
+		runloop();
 
 
-	runloop();
+
+	});
 
 
 }

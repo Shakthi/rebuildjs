@@ -1,6 +1,6 @@
  var lineHistory = require('./history.js');
 
-
+ var prompt = "";
  var stepProcessor = function(rebuild, history) {
 
  	this.rebuild = rebuild;

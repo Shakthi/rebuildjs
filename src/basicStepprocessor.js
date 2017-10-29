@@ -34,21 +34,33 @@ BasicStepProcessor.prototype.runStep = function() {
 				self.lineHistory.add(answer);
 
 				try {
+
+
 					var sentence = parser.parse(answer);
-					this.rebuild.console.log(sentence.toCode());
+					self.rebuild.console.log(sentence.toCode());
 					self.process(sentence);
 
 				} catch (e) {
 
-					var expected = e.hash.expected;
-					var output = 'Error expected:';
-					expected.forEach(function(argument) {
-						output += argument;
-						output += ' ';
-					})
+					if (e.hash) {
+						if (e.hash.expected) {
 
-					self.rebuild.console.log(output);
+							var expected = e.hash.expected;
+							var output = 'Error expected:';
+							expected.forEach(function(argument) {
+								output += argument;
+								output += ' ';
+							})
 
+							output += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
+
+							self.rebuild.console.log(output);
+
+						}
+
+
+
+					}
 				}
 
 			} else {
@@ -59,6 +71,9 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			resolve();
 
+		}).catch(function (argument) {
+
+			reject(argument);
 		});
 
 	});
@@ -88,6 +103,10 @@ BasicStepProcessor.prototype.process = function(sentence) {
 	} else if (sentence instanceof ast.readStatement) {
 
 		this.rebuild.addNewProcessor(new readProcessors(this.rebuild, sentence, this.varTable));
+	} else if (sentence instanceof ast.endStatement) {
+
+		this.isDead = true;
+
 	}
 }
 

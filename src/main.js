@@ -6,27 +6,35 @@ function main(argument) {
 	rebuild.load();
 	rebuild.init();
 
-	rebuild.selfTest();
-
-	function runloop() {
-
-		rebuild.runStep().then(function(message) {
-
-			runloop();
-
-		}).catch(function(reason) {
-
-			if (reason == "empty processor") {
-				console.log("Finished ");
-				rebuild.save();
-			} else
-				throw (reason);
-		})
-
-	}
+	rebuild.selfTest().then(function() {
 
 
-	runloop();
+		function runloop() {
+
+			rebuild.runStep().then(function(message) {
+
+				runloop();
+
+			}).catch(function(reason) {
+
+				if (reason == "empty processor") {
+					console.log("Finished ");
+					rebuild.save();
+				} else
+					throw (reason);
+			})
+
+		}
+
+
+		runloop();
+
+
+	})
+
+
+
+	
 
 
 
