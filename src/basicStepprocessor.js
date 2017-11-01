@@ -31,7 +31,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			if (answer != "") {
 
-				self.lineHistory.add(answer);
+				self.rebuild.addHistoryEntry(answer);
 
 				try {
 

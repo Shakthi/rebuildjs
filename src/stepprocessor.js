@@ -19,6 +19,12 @@
  	return prompt;
  };
 
+
+ stepProcessor.prototype.getHistory = function() {
+ 	return this.lineHistory;
+ };
+
+
  stepProcessor.prototype.setPrompt = function(aprompt) {
  	prompt = aprompt;
  	return this.rebuild.setPrompt(aprompt);

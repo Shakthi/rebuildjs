@@ -18,9 +18,13 @@ const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
+const historyStack = [];
+
 const lineHistory = new history();
 
 var currentReadlile = readline;
+var isHistoryEnabled = true;
+
 
 exports.lineHistory = lineHistory;
 exports.console = consolewrapper;
@@ -49,13 +53,25 @@ exports.getLine = function(options) {
 	return currentReadlile.getLine(options);
 }
 
+exports.SetHistoryEnabled = function(value) {
+	isHistoryEnabled = value;
+}
+
+exports.addHistoryEntry = function(entry) {
+	if (isHistoryEnabled)
+		historyStack.top().add(entry);
+}
+
+
+
 exports.addNewProcessor = function(argument) {
 
 	if (!processorStack.empty())
 		promptManager.push(processorStack.top().getPrompt());
 
-
 	processorStack.push(argument);
+	historyStack.push(processorStack.top().getHistory());
+
 	argument.onEnter();
 
 }
@@ -64,6 +80,7 @@ exports.exitProcessing = function() {
 
 
 	promptManager.pop();
+	historyStack.pop();
 	processorStack.top().onExit();
 
 	processorStack.pop();
