@@ -40,6 +40,8 @@ testreadline.getLine = function(options) {
 
 exports.selftest = function() {
 
+		return Promise.resolve("endTest");
+
 	var rebuild = this;
 
 	rebuild.SetHistoryEnabled(false);

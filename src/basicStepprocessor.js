@@ -22,6 +22,11 @@ BasicStepProcessor.prototype = Object.create(stepProcessors.prototype);
 BasicStepProcessor.prototype.runStep = function() {
 
 	var self = this;
+	self.stepContext = {
+		addToHistory: true
+	};
+
+
 	return new Promise(function(resolve, reject) {
 
 		self.rebuild.getLine({
@@ -31,7 +36,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			if (answer != "") {
 
-				self.rebuild.addHistoryEntry(answer);
+
 
 				try {
 
@@ -39,6 +44,7 @@ BasicStepProcessor.prototype.runStep = function() {
 					var sentence = parser.parse(answer);
 					self.rebuild.console.log(sentence.toCode());
 					self.process(sentence);
+
 
 				} catch (e) {
 
@@ -57,10 +63,11 @@ BasicStepProcessor.prototype.runStep = function() {
 							self.rebuild.console.log(output);
 
 						}
-
-
-
+					} else {
+						throw (e);
 					}
+
+
 				}
 
 			} else {
@@ -69,9 +76,11 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			}
 
+			if (self.stepContext.addToHistory)
+				self.rebuild.addHistoryEntry(answer);
 			resolve();
 
-		}).catch(function (argument) {
+		}).catch(function(argument) {
 
 			reject(argument);
 		});
@@ -106,6 +115,7 @@ BasicStepProcessor.prototype.process = function(sentence) {
 	} else if (sentence instanceof ast.endStatement) {
 
 		this.isDead = true;
+		this.stepContext.addToHistory =false;
 
 	}
 }

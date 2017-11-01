@@ -9,6 +9,24 @@ class Statement extends Sentence {
 
 };
 
+
+class forStatement extends Statement {
+
+	constructor(varName, fromExpression, toExpression) {
+		super();
+		this.varName = varName;
+		this.fromExpression = fromExpression;
+		this.toExpression = toExpression;
+	}
+
+	toCode() {
+		var code = "for " + this.varName + " = " + this.fromExpression.toCode() + " to " + this.toExpression.toCode();
+		return code;
+	}
+
+}
+
+
 class printStatement extends Statement {
 
 	constructor(elements) {
@@ -53,11 +71,11 @@ class readStatement extends Statement {
 
 	toCode() {
 		var code = "read ";
-		for (var i = 0; i < elements.length; i++) {
+		for (var i = 0; i < this.elements.length; i++) {
 
 			if (i != 0)
 				code += ", ";
-			code += elements[i].toCode();
+			code += this.elements[i];
 		}
 
 
@@ -190,7 +208,7 @@ class getExpression extends expression {
 	}
 
 	toCode() {
-		var code = varName;
+		var code = this.varName;
 		return code;
 	}
 
@@ -207,3 +225,4 @@ exports.letStatement = letStatement;
 exports.readStatement = readStatement;
 exports.printStatement = printStatement;
 exports.endStatement = endStatement;
+exports.forStatement = forStatement;

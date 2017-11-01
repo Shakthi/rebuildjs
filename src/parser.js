@@ -4,7 +4,7 @@ var Parser = require("jison").Parser;
 
 
 var basicStatmentFun = "\n" +
-    "    var basicStatments = ['print', 'let', 'read', 'if', 'for', 'list','end']; \n" +
+    "    var basicStatments = ['print', 'let', 'read', 'if', 'for', 'list','end','to']; \n" +
     "\n";
 
 
@@ -75,7 +75,9 @@ var grammar = {
             ["print printedItemList EOF", "$$ = new yy.printStatement($2); return($$);"],
             ["let identifier = e EOF", "$$ = new yy.letStatement($2,$4); return($$);"],
             ["readStatement EOF", "$$=$1; return($$);"],
-            ["end EOF", "$$= new yy.endStatement(); return($$);"]
+            ["end EOF", "$$= new yy.endStatement(); return($$);"],
+            ["for identifier = e to e EOF", "$$= new yy.forStatement($2,$4,$6); return($$);"]
+
         ],
 
         "printedItemList": [

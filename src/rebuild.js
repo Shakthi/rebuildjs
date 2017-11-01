@@ -111,7 +111,7 @@ exports.save = function() {
 		lineHistory: lineHistory.toJson(),
 		recordedSession: readline.getRecordedSession()
 	};
-	fs.writeFileSync(getFileSave(), JSON.stringify(obj), 'utf8');
+	fs.writeFileSync(getFileSave(), JSON.stringify(obj,null,2), 'utf8');
 
 
 }
