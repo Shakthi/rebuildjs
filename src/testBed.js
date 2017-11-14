@@ -40,14 +40,19 @@ testreadline.getLine = function(options) {
 
 exports.selftest = function() {
 
-		return Promise.resolve("endTest");
 
 	var rebuild = this;
 
+
 	rebuild.SetHistoryEnabled(false);
-	rebuild.console.setEnabled(false);
+	//rebuild.console.setEnabled(false);
 	var oldReadline = rebuild.setReadline(testreadline);
-	testreadline.init(rebuild.lineHistory.getContent());
+
+	if (rebuild.testCommand) {
+		testreadline.init([rebuild.testCommand]);
+	} else {
+		//testreadline.init(rebuild.lineHistory.getContent());
+	}
 
 
 

@@ -26,9 +26,12 @@ var currentReadlile = readline;
 var isHistoryEnabled = true;
 
 
-exports.lineHistory = lineHistory;
-exports.console = consolewrapper;
-exports.runStep = function() {
+var rebuild = {};
+
+
+rebuild.lineHistory = lineHistory;
+rebuild.console = consolewrapper;
+rebuild.runStep = function() {
 
 
 
@@ -48,23 +51,23 @@ exports.runStep = function() {
 
 }
 
-exports.getLine = function(options) {
+rebuild.getLine = function(options) {
 	options.recordSession = true;
 	return currentReadlile.getLine(options);
 }
 
-exports.SetHistoryEnabled = function(value) {
+rebuild.SetHistoryEnabled = function(value) {
 	isHistoryEnabled = value;
 }
 
-exports.addHistoryEntry = function(entry) {
+rebuild.addHistoryEntry = function(entry) {
 	if (isHistoryEnabled)
 		historyStack.top().add(entry);
 }
 
 
 
-exports.addNewProcessor = function(argument) {
+rebuild.addNewProcessor = function(argument) {
 
 	if (!processorStack.empty())
 		promptManager.push(processorStack.top().getPrompt());
@@ -76,7 +79,7 @@ exports.addNewProcessor = function(argument) {
 
 }
 
-exports.exitProcessing = function() {
+rebuild.exitProcessing = function() {
 
 
 	promptManager.pop();
@@ -87,38 +90,39 @@ exports.exitProcessing = function() {
 
 }
 
-exports.getPrompt = function() {
+rebuild.getPrompt = function() {
 	return promptManager.getPrompt();
 }
 
 
-exports.setPrompt = function(prompt) {
+rebuild.setPrompt = function(prompt) {
 	return promptManager.setPrompt(prompt);
 }
 
 
 
-exports.init = function() {
+rebuild.init = function(argv) {
 
-	this.addNewProcessor(new stepprocessor(exports, lineHistory));
+	this.testCommand = argv.testCommand;
+	this.addNewProcessor(new stepprocessor(rebuild, lineHistory));
 }
 
 
 
-exports.save = function() {
+rebuild.save = function() {
 
 	var obj = {
 		lineHistory: lineHistory.toJson(),
 		recordedSession: readline.getRecordedSession()
 	};
-	fs.writeFileSync(getFileSave(), JSON.stringify(obj,null,2), 'utf8');
+	fs.writeFileSync(getFileSave(), JSON.stringify(obj, null, 2), 'utf8');
 
 
 }
 
 
 
-exports.load = function() {
+rebuild.load = function() {
 	try {
 
 		var obj = JSON.parse(fs.readFileSync(getFileSave(), 'utf8'));
@@ -137,7 +141,7 @@ function getFileSave() {
 	return process.env.HOME + "/.rebuildjs.alldb.json";
 }
 
-exports.setReadline = function(areadline) {
+rebuild.setReadline = function(areadline) {
 
 	var old = readline;
 	currentReadlile = areadline;
@@ -145,4 +149,6 @@ exports.setReadline = function(areadline) {
 }
 
 
-exports.selfTest = testBed.selftest;
+rebuild.selfTest = testBed.selftest;
+
+module.exports = rebuild;

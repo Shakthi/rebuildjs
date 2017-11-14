@@ -1,10 +1,11 @@
 var rebuild = require('./rebuild.js');
 
 
-function main(argument) {
+function main(arguments) {
 
+	var argv = require('minimist')(arguments);
 	rebuild.load();
-	rebuild.init();
+	rebuild.init(argv);
 
 	rebuild.selfTest().then(function() {
 
@@ -34,9 +35,8 @@ function main(argument) {
 
 
 
-	
-
-
-
 }
-main();
+
+
+
+main(process.argv);

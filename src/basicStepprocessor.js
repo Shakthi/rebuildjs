@@ -1,5 +1,6 @@
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const readProcessors = require('./readStepProcessor.js').readStepProcessor;
+const forProcessors = require('./forStepProcessor.js').forStepProcessor;
 const parser = require('./parser.js').parser;
 const VarTable = require('./varTable.js');
 const ast = require("./ast.js");
@@ -117,7 +118,11 @@ BasicStepProcessor.prototype.process = function(sentence) {
 		this.isDead = true;
 		this.stepContext.addToHistory =false;
 
-	}
+	}else if (sentence instanceof ast.forStatement) {
+
+		this.rebuild.addNewProcessor(new forProcessors(this.rebuild, sentence, this.varTable));
+
+	} 
 }
 
 
