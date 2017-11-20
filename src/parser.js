@@ -1,16 +1,14 @@
+const ast = require("./ast.js");
+const JisonParser = require("jison").Parser;
 
-var ast = require("./ast.js");
-var Parser = require("jison").Parser;
 
-
-var basicStatmentFun = "\n" +
+const basicStatmentFun = "\n" +
     "    var basicStatments = ['print', 'let', 'read', 'if', 'for', 'list','end','to']; \n" +
     "\n";
 
 
 
-
-var grammar = {
+const grammar = {
     // "options": {
     //     "debug": "true"
     // },
@@ -99,7 +97,6 @@ var grammar = {
 
 
 
-
         "e": [
             ["e + e", "$$ =  new  yy.binaryExpression('+', $1,$3); "],
             ["e - e", "$$ = new  yy.binaryExpression('-', $1,$3);"],
@@ -117,7 +114,36 @@ var grammar = {
 
 };
 
-var parser = new Parser(grammar);
+const jisonParser = new JisonParser(grammar);
+jisonParser.yy = ast;
 
-parser.yy = ast;
+const parser = {
+    parse: function(argument) {
+        var result = null;
+        try {
+            result = jisonParser.parse(argument);
+        } catch (e) {
+
+            if (e.hash) {
+                if (e.hash.expected) {
+
+                    var expected = e.hash.expected;
+                    var output = 'Error expected:';
+                    expected.forEach(function(argument) {
+                        output += argument;
+                        output += ' ';
+                    })
+
+                    output += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
+
+                }
+            }
+            result = new ast.errorStatement(output);
+            result.src = argument;
+        }
+
+        return result;
+    }
+}
+
 exports.parser = parser;

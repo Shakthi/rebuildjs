@@ -1,19 +1,22 @@
-var testreadline = {};
+var testreadline = {
+	finished: false
+};
 
 var historyCompleter;
 
 var historyArray;
-var index = -1;
+var index = 0;
 
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
 testreadline.init = function(ahistoryArray) {
 	historyArray = ahistoryArray.slice(0);
+
 }
 
 testreadline.getLine = function(options) {
-	index++;
+
 	if (options) {
 		if (options.history) {
 
@@ -24,15 +27,11 @@ testreadline.getLine = function(options) {
 	historyCompleter.onEditBegin();
 	historyCompleter.onEditEnd();
 
-	if (index >= historyArray.length) {
-		return Promise.reject("endTest");
-	}
+	var ret = Promise.resolve(historyArray[index++]);
+	if (index >= historyArray.length)
+		this.finished = true;
 
-	if (historyArray[index] != "end")
-		return Promise.resolve(historyArray[index]);
-	else
-		return testreadline.getLine(options);
-
+	return ret;
 
 
 }
@@ -43,21 +42,24 @@ exports.selftest = function() {
 
 	var rebuild = this;
 
+	if (!rebuild.options.needSelfTest) {
+		return Promise.resolve();
+	}
 
-	rebuild.SetHistoryEnabled(false);
-	//rebuild.console.setEnabled(false);
 	var oldReadline = rebuild.setReadline(testreadline);
 
 	if (rebuild.testCommand) {
-		testreadline.init([rebuild.testCommand]);
+		testreadline.init(rebuild.testCommand.split(';'));
 	} else {
-		//testreadline.init(rebuild.lineHistory.getContent());
+		testreadline.init(rebuild.lineHistory.getContent());
+		rebuild.SetHistoryEnabled(false);
+		//rebuild.console.setEnabled(false);
 	}
 
 
 
 	function endTest() {
-		rebuild.console.log("Finished test ");
+		//rebuild.console.log("Finished test ");
 		rebuild.setReadline(oldReadline);
 		rebuild.SetHistoryEnabled(true);
 		rebuild.console.setEnabled(true);
@@ -69,22 +71,20 @@ exports.selftest = function() {
 
 		var runloop = function() {
 
-			rebuild.runStep().then(function(message) {
+			if (testreadline.finished) {
+				endTest();
+				resolve("end selftest");
 
-				runloop();
+			} else {
 
-			}).catch(function(reason) {
+				rebuild.runStep().then(function(message) {
 
-				if (reason == "endTest") {
+					runloop();
 
-					endTest();
-					resolve("endTest");
+				});
+			}
 
-				} else {
 
-					reject(reason);
-				}
-			})
 
 		}
 

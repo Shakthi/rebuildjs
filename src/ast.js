@@ -1,4 +1,11 @@
 class Sentence {
+	constructor() {
+		this.src = "";
+	}
+
+	toCode() {
+		return this.src;
+	}
 
 
 };
@@ -8,6 +15,22 @@ class Statement extends Sentence {
 
 
 };
+
+
+class errorStatement extends Statement {
+
+	constructor(message, found, expected) {
+		super();
+		Object.assign(this, {
+			message,
+			found,
+			expected
+		});
+	}
+
+
+};
+
 
 
 class forStatement extends Statement {
@@ -218,6 +241,7 @@ class getExpression extends expression {
 
 
 exports.getExpression = getExpression;
+exports.errorStatement = errorStatement;
 exports.terminalExpression = terminalExpression;
 exports.unaryExpression = unaryExpression;
 exports.binaryExpression = binaryExpression;

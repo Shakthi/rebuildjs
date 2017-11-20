@@ -1,6 +1,4 @@
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
-const readProcessors = require('./readStepProcessor.js').readStepProcessor;
-const forProcessors = require('./forStepProcessor.js').forStepProcessor;
 const parser = require('./parser.js').parser;
 const VarTable = require('./varTable.js');
 const ast = require("./ast.js");
@@ -36,39 +34,15 @@ BasicStepProcessor.prototype.runStep = function() {
 		}).then(function(answer) {
 
 			if (answer != "") {
-
-
-
 				try {
-
 
 					var sentence = parser.parse(answer);
 					self.rebuild.console.log(sentence.toCode());
-					self.process(sentence);
-
+					self.processSentence(sentence);
 
 				} catch (e) {
 
-					if (e.hash) {
-						if (e.hash.expected) {
-
-							var expected = e.hash.expected;
-							var output = 'Error expected:';
-							expected.forEach(function(argument) {
-								output += argument;
-								output += ' ';
-							})
-
-							output += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
-
-							self.rebuild.console.log(output);
-
-						}
-					} else {
-						throw (e);
-					}
-
-
+					self.rebuild.console.log(e);
 				}
 
 			} else {
@@ -94,7 +68,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 
 
-BasicStepProcessor.prototype.process = function(sentence) {
+BasicStepProcessor.prototype.processSentence = function(sentence) {
 
 
 	if (sentence instanceof ast.printStatement) {
@@ -110,19 +84,18 @@ BasicStepProcessor.prototype.process = function(sentence) {
 
 		this.varTable.setEntry(sentence.varName, sentence.expression.evaluate());
 
-	} else if (sentence instanceof ast.readStatement) {
-
-		this.rebuild.addNewProcessor(new readProcessors(this.rebuild, sentence, this.varTable));
 	} else if (sentence instanceof ast.endStatement) {
 
 		this.isDead = true;
-		this.stepContext.addToHistory =false;
+		this.stepContext.addToHistory = false;
 
-	}else if (sentence instanceof ast.forStatement) {
+	} else if (sentence instanceof ast.errorStatement) {
 
-		this.rebuild.addNewProcessor(new forProcessors(this.rebuild, sentence, this.varTable));
+		this.rebuild.console.log("! " + sentence.message);
+	} else {
 
-	} 
+		this.rebuild.addNewProcessor(this.rebuild.processorFactory.createProcessorsPerSentence(sentence, this.rebuild, this.varTable));
+	}
 }
 
 

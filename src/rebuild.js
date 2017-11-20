@@ -14,6 +14,9 @@ const readline = require('./readline.js');
 const testBed = require('./testBed.js');
 const history = require('./history.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
+const processorFactory = require('./processorFactory.js');
+
+
 const consolewrapper = require('./ConsoleWrapper.js');
 
 
@@ -28,9 +31,17 @@ var isHistoryEnabled = true;
 
 var rebuild = {};
 
+rebuild.options = {
+	needSelfTest: true,
+	executeCommandLine: false
+};
+
+
 
 rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
+
+
 rebuild.runStep = function() {
 
 
@@ -148,7 +159,7 @@ rebuild.setReadline = function(areadline) {
 	return old;
 }
 
-
+rebuild.processorFactory = processorFactory;
 rebuild.selfTest = testBed.selftest;
 
 module.exports = rebuild;

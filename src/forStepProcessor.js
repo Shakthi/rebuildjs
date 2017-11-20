@@ -1,6 +1,8 @@
-const superClass = require('./stepprocessor.js').stepProcessor;
+const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
+const parser = require('./parser.js').parser;
 
-var forStepProcessor = function(rebuild, statement, superVarTable) {
+
+const forStepProcessor = function(rebuild, statement, superVarTable) {
 	superClass.call(this, rebuild, null, superVarTable)
 	this.statement = statement;
 	this.varTable = superVarTable;
@@ -12,17 +14,19 @@ forStepProcessor.prototype = Object.create(superClass.prototype);
 
 forStepProcessor.prototype.runStep = function() {
 
+	var self = this;
+
+	self.stepContext = {
+		addToHistory: true
+	};
+
 	if (!this.prompt) {
 		this.prompt = "for ";
-		
-		
-
 		this.prompt += '}';
 	}
 
 
 
-	var self = this;
 	return new Promise(function(resolve, reject) {
 
 		self.rebuild.getLine({
@@ -30,34 +34,9 @@ forStepProcessor.prototype.runStep = function() {
 			prompt: self.setPrompt(self.prompt)
 		}).then(function(answer) {
 
-			if (answer != "") {
 
-				var inputval = eval(answer);
-
-				if (Array.isArray(inputval)) {
-
-					for (var i = 0; i < self.statement.elements.length; i++) {
-
-						if (i >= inputval.length)
-							break;
-						self.varTable.setEntry(self.statement.elements[i], inputval[i]);
-
-					}
-
-				} else {
-					self.varTable.setEntry(self.statement.elements[0], inputval);
-				}
-
-				self.isDead = true;
-
-
-
-			} else {
-
-				self.isDead = true;
-
-			}
-
+			const sentence = parser.parse(answer);
+			self.processSentence(sentence);
 			resolve();
 
 		});
@@ -66,6 +45,10 @@ forStepProcessor.prototype.runStep = function() {
 
 
 };
+
+forStepProcessor.prototype.processSentence = function(argument) {
+	 superClass.prototype.processSentence.call(this,argument);
+}
 
 
 exports.forStepProcessor = forStepProcessor;
