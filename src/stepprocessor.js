@@ -32,6 +32,10 @@
  }
 
 
+ stepProcessor.prototype.markDead = function() {
+ 	this.isDead = true;
+ }
+
 
  stepProcessor.prototype.onExit = function() {
 

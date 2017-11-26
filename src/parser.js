@@ -83,7 +83,11 @@ const grammar = {
             ["printedItemList , printedItem", "$1.push($3); $$ = $1;"]
         ],
 
-        "printedItem": ["e", "$$ = $1"],
+        "printedItem": [
+            ["e", "$$ = $1"],
+            ["es", "$$ = $1"]
+        ],
+
 
 
         "readStatement": [
@@ -109,6 +113,11 @@ const grammar = {
             ["NUMBER", "$$ = new  yy.terminalExpression(Number(yytext))"],
             ["identifier", "$$ = new  yy.getExpression(yytext)"],
 
+        ],
+
+
+        "es": [
+            ["STRING_LITERAL", "$$ = new  yy.terminalExpression(yytext)"],
         ]
     },
 

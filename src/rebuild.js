@@ -1,20 +1,16 @@
-Array.prototype.last = function() {
-	return this[this.length - 1];
-};
-Array.prototype.top = Array.prototype.last;
-Array.prototype.empty = function() {
-	return (this.length == 0);
-};
 
+require('./utils.js');
 
 const promptManager = require('./PromptManager.js');
 
 const fs = require('fs');
 const readline = require('./readline.js');
 const testBed = require('./testBed.js');
-const history = require('./history.js');
+const history = require('./sentenceHistory.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 const processorFactory = require('./processorFactory.js');
+const options = require('./options.js');
+
 
 
 const consolewrapper = require('./ConsoleWrapper.js');
@@ -31,10 +27,7 @@ var isHistoryEnabled = true;
 
 var rebuild = {};
 
-rebuild.options = {
-	needSelfTest: true,
-	executeCommandLine: false
-};
+rebuild.options = options;
 
 
 

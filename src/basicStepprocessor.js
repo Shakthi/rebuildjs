@@ -52,7 +52,7 @@ BasicStepProcessor.prototype.runStep = function() {
 			}
 
 			if (self.stepContext.addToHistory)
-				self.rebuild.addHistoryEntry(answer);
+				self.rebuild.addHistoryEntry(sentence);
 			resolve();
 
 		}).catch(function(argument) {

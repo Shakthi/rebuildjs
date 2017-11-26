@@ -7,6 +7,10 @@ class Sentence {
 		return this.src;
 	}
 
+	isEqual(aSentence) {
+		return this.toCode() === aSentence.toCode();
+	}
+
 
 };
 
@@ -15,6 +19,12 @@ class Statement extends Sentence {
 
 
 };
+
+class UnProcessedSentence extends Sentence {
+
+
+};
+
 
 
 class errorStatement extends Statement {
@@ -212,7 +222,13 @@ class terminalExpression extends expression {
 	}
 
 	toCode() {
-		var code = this.terminalValue;
+		var code = "";
+		if (typeof this.terminalValue === 'string') {
+			code += '"' + this.terminalValue + '"';
+		} else {
+			code += this.terminalValue;
+		}
+
 		return code;
 	}
 
@@ -250,3 +266,4 @@ exports.readStatement = readStatement;
 exports.printStatement = printStatement;
 exports.endStatement = endStatement;
 exports.forStatement = forStatement;
+exports.UnProcessedSentence = UnProcessedSentence;
