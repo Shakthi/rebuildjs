@@ -1,4 +1,3 @@
-
 require('./utils.js');
 
 const promptManager = require('./PromptManager.js');
@@ -17,6 +16,8 @@ const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
+const waitingProcessorStack = [];
+
 const historyStack = [];
 
 const lineHistory = new history();
@@ -33,24 +34,49 @@ rebuild.options = options;
 
 rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
-
+rebuild.isAlive = true;
 
 rebuild.runStep = function() {
 
 
-
-	if (processorStack.length == 0) {
-		return Promise.reject("empty processor");
-	}
-
-	if (processorStack.last().isDead) {
-
-		this.exitProcessing();
-		return Promise.resolve("stack pop");
-	}
+	return new Promise(function(resolve, reject) {
 
 
-	return processorStack.last().runStep();
+		if (!waitingProcessorStack.empty()) {
+
+			rebuild.enterProcessing(waitingProcessorStack.shift())
+
+		}
+
+		if (processorStack.length == 0) {
+			reject("empty processor");
+		}
+
+		processorStack.last().runStep().then(function(argument) {
+
+			if (processorStack.last().isDead) {
+
+				rebuild.exitProcessing();
+
+			}
+
+			if (!rebuild.isAlive)
+				reject("request termination");
+			else
+				resolve("next step");
+
+
+		}).catch(function(reason) {
+
+
+			console.log("Caught ", reason);
+
+		})
+
+
+
+	})
+
 
 
 }
@@ -73,14 +99,7 @@ rebuild.addHistoryEntry = function(entry) {
 
 rebuild.addNewProcessor = function(argument) {
 
-	if (!processorStack.empty())
-		promptManager.push(processorStack.top().getPrompt());
-
-	processorStack.push(argument);
-	historyStack.push(processorStack.top().getHistory());
-
-	argument.onEnter();
-
+	waitingProcessorStack.push(argument);
 }
 
 rebuild.exitProcessing = function() {
@@ -91,6 +110,21 @@ rebuild.exitProcessing = function() {
 	processorStack.top().onExit();
 
 	processorStack.pop();
+
+}
+
+
+rebuild.enterProcessing = function(argument) {
+
+	if (!processorStack.empty())
+		promptManager.push(processorStack.top().getPrompt());
+
+	processorStack.push(argument);
+	historyStack.push(processorStack.top().getHistory());
+
+	argument.onEnter();
+
+
 
 }
 

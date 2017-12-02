@@ -61,9 +61,20 @@ forStepProcessor.prototype.runStep = function() {
 				prompt: self.setPrompt("for " + self.statement.varName + "}")
 			}).then(function(answer) {
 
-				const sentence = parser.parse(answer);
-				self.processSentence(sentence);
-				resolve();
+				if (answer != "") {
+
+					const sentence = parser.parse(answer);
+					self.processSentence(sentence);
+					resolve();
+
+				} else {
+					
+					self.stepContext.addToHistory = false;
+					self.rebuild.isAlive = false;
+					resolve();
+
+				}
+
 
 			});
 

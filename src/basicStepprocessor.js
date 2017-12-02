@@ -48,6 +48,8 @@ BasicStepProcessor.prototype.runStep = function() {
 			} else {
 
 				self.isDead = true;
+				self.stepContext.addToHistory = false;
+
 
 			}
 

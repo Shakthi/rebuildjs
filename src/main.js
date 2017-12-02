@@ -18,7 +18,7 @@ function main(arguments) {
 
 			}).catch(function(reason) {
 
-				if (reason == "empty processor") {
+				if (reason == "empty processor" || reason == "request termination") {
 					console.log("Finished ");
 					rebuild.save();
 				} else

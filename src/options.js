@@ -1,7 +1,8 @@
 const options = {
 
-	needSelfTest: false,
-	executeCommandLine: false
+	needSelfTest: true,
+	executeCommandLine: true,
+	executeCommandLineNormally: true
 
 
 };

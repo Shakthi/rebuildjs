@@ -50,6 +50,11 @@ exports.selftest = function() {
 
 	if (rebuild.testCommand) {
 		testreadline.init(rebuild.testCommand.split(';'));
+
+		if (rebuild.options.executeCommandLineNormally)
+			return Promise.resolve("end test command");
+
+
 	} else {
 		testreadline.init(rebuild.lineHistory.getContent());
 		rebuild.SetHistoryEnabled(false);

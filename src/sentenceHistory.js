@@ -127,7 +127,28 @@ class SentenceHistory {
 
 
 
+	fromJson(jsonobj) {
+
+		this.history = jsonobj.content.map(function(argument) {
+			return ast.createSentenceFromJson(argument);
+		})
+	}
+
+	toJson() {
+
+		const contentJSON = this.history.map(function(argument) {
+			return ast.sentenceToJson(argument);
+		});
+
+		return {
+			name: "SentenceHistory",
+			content: contentJSON
+		}
+
+	}
+
 }
+
 
 
 module.exports = exports = SentenceHistory;

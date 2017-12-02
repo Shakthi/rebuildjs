@@ -1,5 +1,76 @@
-class Sentence {
+class Serializable {
+
+	toJson() {
+
+		function toJsonEntity(enttity) {
+			switch (typeof(enttity)) {
+				case 'number':
+				case 'string':
+				case 'boolean':
+					return enttity;
+
+
+				case 'object':
+					if (enttity == null) {
+						return enttity;
+
+					} else if (Array.isArray(enttity)) {
+						enttity.map(function(argument) {
+							return toJsonEntity(argument);
+						});
+					} else if (enttity) {
+						return exports.sentenceToJson(enttity);
+
+					}
+
+			}
+
+		}
+
+		const data = {};
+
+		const self = this;
+		this.serialize().forEach(function(argument) {
+			data[argument] = toJsonEntity(self[argument]);
+
+
+		})
+
+		return data;
+
+	}
+
+
+	fromJson(data) {
+
+
+		const self = this;
+		this.serialize().forEach(function(argument) {
+			self[argument] = data[argument];
+		})
+
+	}
+
+
+	serialize() {
+		const ret = [];
+		ret.add = function() {
+			const args = Array.from(arguments);
+			args.forEach(function(argument) {
+				ret.push(argument);
+			})
+			return this;
+		}
+		return ret;
+	}
+
+}
+
+
+
+class Sentence extends Serializable {
 	constructor() {
+		super();
 		this.src = "";
 	}
 
@@ -11,6 +82,9 @@ class Sentence {
 		return this.toCode() === aSentence.toCode();
 	}
 
+	serialize() {
+		return super.serialize().add('src');
+	}
 
 };
 
@@ -39,6 +113,11 @@ class errorStatement extends Statement {
 	}
 
 
+	serialize() {
+		return super.serialize().add('message');
+	}
+
+
 };
 
 
@@ -55,6 +134,10 @@ class forStatement extends Statement {
 	toCode() {
 		var code = "for " + this.varName + " = " + this.fromExpression.toCode() + " to " + this.toExpression.toCode();
 		return code;
+	}
+
+	serialize(attributes) {
+		return super.serialize().add('varName', 'fromExpression', 'toExpression');
 	}
 
 }
@@ -136,7 +219,8 @@ class letStatement extends Statement {
 };
 
 
-class expression {
+class expression extends Serializable {
+
 
 	evaluate(context) {
 		if (this.terminalValue) {
@@ -176,6 +260,10 @@ class unaryExpression extends expression {
 		super();
 		this.argument = left;
 		this.operator = operator;
+	}
+
+	serialize() {
+		return super.serialize().add('argument', 'operator');
 	}
 
 	toCode() {
@@ -221,6 +309,10 @@ class terminalExpression extends expression {
 
 	}
 
+	serialize() {
+		return super.serialize().add('terminalValue');
+	}
+
 	toCode() {
 		var code = "";
 		if (typeof this.terminalValue === 'string') {
@@ -252,6 +344,33 @@ class getExpression extends expression {
 	}
 
 
+}
+
+
+
+exports.createSentence = function(name) {
+
+	return Object.create(exports[name].prototype);
+}
+
+
+exports.createSentenceFromJson = function(json) {
+
+	const object = exports.createSentence(json.constructorName);
+	object.fromJson(json.content);
+
+	return object;
+}
+
+exports.sentenceToJson = function(sentence) {
+
+	data = {
+		constructorName: sentence.constructor.name,
+		content: sentence.toJson()
+
+	};
+
+	return data;
 }
 
 
