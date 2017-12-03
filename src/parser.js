@@ -131,6 +131,7 @@ const parser = {
         var result = null;
         try {
             result = jisonParser.parse(argument);
+            result.src = argument;
         } catch (e) {
 
             if (e.hash) {

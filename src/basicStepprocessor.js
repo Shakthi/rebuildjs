@@ -47,7 +47,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			} else {
 
-				self.isDead = true;
+				self.rebuild.isAlive = false;
 				self.stepContext.addToHistory = false;
 
 

@@ -1,73 +1,6 @@
-class Serializable {
+const Serializable = require('./serializable')
 
-	toJson() {
-
-		function toJsonEntity(enttity) {
-			switch (typeof(enttity)) {
-				case 'number':
-				case 'string':
-				case 'boolean':
-					return enttity;
-
-
-				case 'object':
-					if (enttity == null) {
-						return enttity;
-
-					} else if (Array.isArray(enttity)) {
-						enttity.map(function(argument) {
-							return toJsonEntity(argument);
-						});
-					} else if (enttity) {
-						return exports.sentenceToJson(enttity);
-
-					}
-
-			}
-
-		}
-
-		const data = {};
-
-		const self = this;
-		this.serialize().forEach(function(argument) {
-			data[argument] = toJsonEntity(self[argument]);
-
-
-		})
-
-		return data;
-
-	}
-
-
-	fromJson(data) {
-
-
-		const self = this;
-		this.serialize().forEach(function(argument) {
-			self[argument] = data[argument];
-		})
-
-	}
-
-
-	serialize() {
-		const ret = [];
-		ret.add = function() {
-			const args = Array.from(arguments);
-			args.forEach(function(argument) {
-				ret.push(argument);
-			})
-			return this;
-		}
-		return ret;
-	}
-
-}
-
-
-
+const ast = {};
 class Sentence extends Serializable {
 	constructor() {
 		super();
@@ -82,8 +15,10 @@ class Sentence extends Serializable {
 		return this.toCode() === aSentence.toCode();
 	}
 
-	serialize() {
-		return super.serialize().add('src');
+	
+
+	factory() {
+		return ast;
 	}
 
 };
@@ -113,10 +48,6 @@ class errorStatement extends Statement {
 	}
 
 
-	serialize() {
-		return super.serialize().add('message');
-	}
-
 
 };
 
@@ -136,9 +67,7 @@ class forStatement extends Statement {
 		return code;
 	}
 
-	serialize(attributes) {
-		return super.serialize().add('varName', 'fromExpression', 'toExpression');
-	}
+	
 
 }
 
@@ -150,6 +79,7 @@ class printStatement extends Statement {
 		this.elements = elements;
 	}
 
+	
 	toCode() {
 		var code = "print ";
 		for (var i = 0; i < this.elements.length; i++) {
@@ -185,6 +115,7 @@ class readStatement extends Statement {
 		this.prompt = prompt;
 	}
 
+
 	toCode() {
 		var code = "read ";
 		for (var i = 0; i < this.elements.length; i++) {
@@ -210,6 +141,7 @@ class letStatement extends Statement {
 		this.varName = varName;
 		this.expression = anexpression;
 	}
+	
 
 	toCode() {
 		var code = "let " + this.varName + " = " + this.expression.toCode();
@@ -262,9 +194,7 @@ class unaryExpression extends expression {
 		this.operator = operator;
 	}
 
-	serialize() {
-		return super.serialize().add('argument', 'operator');
-	}
+	
 
 	toCode() {
 
@@ -298,6 +228,9 @@ class binaryExpression extends expression {
 		var code = this.left.toCode() + ' ' + this.operator + ' ' + this.right.toCode();
 		return code;
 	}
+
+	
+	
 }
 
 
@@ -309,9 +242,6 @@ class terminalExpression extends expression {
 
 	}
 
-	serialize() {
-		return super.serialize().add('terminalValue');
-	}
 
 	toCode() {
 		var code = "";
@@ -348,21 +278,21 @@ class getExpression extends expression {
 
 
 
-exports.createSentence = function(name) {
+ast.createSentence = function(name) {
 
-	return Object.create(exports[name].prototype);
+	return Object.create(ast[name].prototype);
 }
 
 
-exports.createSentenceFromJson = function(json) {
+ast.createSentenceFromJson = function(json) {
 
-	const object = exports.createSentence(json.constructorName);
+	const object = ast.createSentence(json.constructorName);
 	object.fromJson(json.content);
 
 	return object;
 }
 
-exports.sentenceToJson = function(sentence) {
+ast.sentenceToJson = function(sentence) {
 
 	data = {
 		constructorName: sentence.constructor.name,
@@ -375,14 +305,17 @@ exports.sentenceToJson = function(sentence) {
 
 
 
-exports.getExpression = getExpression;
-exports.errorStatement = errorStatement;
-exports.terminalExpression = terminalExpression;
-exports.unaryExpression = unaryExpression;
-exports.binaryExpression = binaryExpression;
-exports.letStatement = letStatement;
-exports.readStatement = readStatement;
-exports.printStatement = printStatement;
-exports.endStatement = endStatement;
-exports.forStatement = forStatement;
-exports.UnProcessedSentence = UnProcessedSentence;
+ast.getExpression = getExpression;
+ast.errorStatement = errorStatement;
+ast.terminalExpression = terminalExpression;
+ast.unaryExpression = unaryExpression;
+ast.binaryExpression = binaryExpression;
+ast.letStatement = letStatement;
+ast.readStatement = readStatement;
+ast.printStatement = printStatement;
+ast.endStatement = endStatement;
+ast.forStatement = forStatement;
+ast.UnProcessedSentence = UnProcessedSentence;
+
+
+module.exports = ast;
