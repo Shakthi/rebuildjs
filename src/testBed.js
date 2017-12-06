@@ -2,6 +2,8 @@ var testreadline = {
 	finished: false
 };
 
+var testreadlineFinishCallBack = null;
+
 var historyCompleter;
 
 var historyArray;
@@ -10,8 +12,9 @@ var index = 0;
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
-testreadline.init = function(ahistoryArray) {
+testreadline.init = function(ahistoryArray, atestreadlineFinishCallBack) {
 	historyArray = ahistoryArray.slice(0);
+	testreadlineFinishCallBack = atestreadlineFinishCallBack;
 
 }
 
@@ -28,8 +31,12 @@ testreadline.getLine = function(options) {
 	historyCompleter.onEditEnd();
 
 	var ret = Promise.resolve(historyArray[index++]);
-	if (index >= historyArray.length)
+	if (index >= historyArray.length) {
 		this.finished = true;
+		if (testreadlineFinishCallBack) {
+			testreadlineFinishCallBack();
+		}
+	}
 
 	return ret;
 
@@ -49,7 +56,11 @@ exports.selftest = function() {
 	var oldReadline = rebuild.setReadline(testreadline);
 
 	if (rebuild.testCommand) {
-		testreadline.init(rebuild.testCommand.split(';'));
+		testreadline.init(rebuild.testCommand.split(';'), function() {
+
+			rebuild.setReadline(oldReadline);
+
+		});
 
 		if (rebuild.options.executeCommandLineNormally)
 			return Promise.resolve("end test command");
