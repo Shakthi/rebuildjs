@@ -1,4 +1,4 @@
-const Serializable = require('./serializable')
+const Serializable = require('simple-serial-js')
 
 const ast = {};
 class Sentence extends Serializable {
@@ -181,6 +181,11 @@ class expression extends Serializable {
 
 
 
+	}
+
+	
+	factory() {
+		return ast;
 	}
 
 }
