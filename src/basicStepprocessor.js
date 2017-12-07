@@ -11,6 +11,7 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 
 	stepProcessors.call(this, rebuild, history);
 	this.varTable = new VarTable();
+	this.history = history;
 	if (superVarTable) {
 		this.superEntry = superVarTable;
 	}
@@ -71,54 +72,64 @@ BasicStepProcessor.prototype.runStep = function() {
 };
 
 BasicStepProcessor.prototype.processCommand = function(command) {
-
+	const self = this;
 	if (command instanceof ast.CustomCommand) {
 
-	} else {
+		switch (command.name) {
+			case "list":
+				this.history.getContent().forEach(function(argument) {
+					self.rebuild.console.log(argument.toCode());
+				});
+				break;
 
+			default:
+				throw ("Unknown command:" + command.name);
+		}
+
+	} else {
 		throw ("Failed to process sentence" + JSON.stringify(command.toJson()));
 	}
 
 
-}
+};
 
 BasicStepProcessor.prototype.processStatement = function(statement) {
-	if (sentence instanceof ast.printStatement) {
+	if (statement instanceof ast.printStatement) {
 		var output = "";
 
-		for (var i = 0; i < sentence.elements.length; i++) {
+		for (var i = 0; i < statement.elements.length; i++) {
 
-			output += sentence.elements[i].evaluate(this.varTable);
+			output += statement.elements[i].evaluate(this.varTable);
 		}
 		this.rebuild.console.log(output);
 
-	} else if (sentence instanceof ast.letStatement) {
+	} else if (statement instanceof ast.letStatement) {
 
-		this.varTable.setEntry(sentence.varName, sentence.expression.evaluate());
+		this.varTable.setEntry(statement.varName, statement.expression.evaluate());
 
-	} else if (sentence instanceof ast.endStatement) {
+	} else if (statement instanceof ast.endStatement) {
 
 		this.isDead = true;
 		this.stepContext.addToHistory = false;
 
-	} else if (sentence instanceof ast.errorStatement) {
+	} else if (statement instanceof ast.errorStatement) {
 
-		this.rebuild.console.log("! " + sentence.message);
+		this.rebuild.console.log("! " + statement.message);
 	} else {
 
-		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(sentence, this.rebuild, this.varTable);
+		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable);
 		if (processor) {
 
 			this.rebuild.addNewProcessor(processor);
 
 		} else {
 
-			throw ("Failed to process sentence" + JSON.stringify(sentence.toJson()));
+			throw ("Failed to process sentence" + JSON.stringify(statement.toJson()));
 		}
 
 
 	}
-}
+};
 
 BasicStepProcessor.prototype.processSentence = function(sentence) {
 

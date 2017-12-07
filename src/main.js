@@ -2,9 +2,9 @@
 var rebuild = require('./rebuild.js');
 
 
-function main() {
+function main(args) {
 
-	var argv = require('minimist')(arguments);
+	var argv = require('minimist')(args);
 	rebuild.load();
 	rebuild.init(argv);
 

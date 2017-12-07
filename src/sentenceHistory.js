@@ -124,7 +124,7 @@ class SentenceHistory {
 
 
 	getContent() {
-		return [];
+		return this.history;
 	}
 
 
