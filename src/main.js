@@ -2,7 +2,7 @@
 var rebuild = require('./rebuild.js');
 
 
-function main(arguments) {
+function main() {
 
 	var argv = require('minimist')(arguments);
 	rebuild.load();
@@ -13,7 +13,7 @@ function main(arguments) {
 
 		function runloop() {
 
-			rebuild.runStep().then(function(message) {
+			rebuild.runStep().then(function() {
 
 				runloop();
 
@@ -24,15 +24,14 @@ function main(arguments) {
 					rebuild.save();
 				} else
 					throw (reason);
-			})
+			});
 
 		}
 
 
 		runloop();
 
-
-	})
+	});
 
 
 

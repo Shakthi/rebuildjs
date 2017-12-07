@@ -1,3 +1,4 @@
+"use strict";
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
 const parser = require('./parser.js').parser;
 
