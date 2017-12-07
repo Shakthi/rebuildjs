@@ -17,7 +17,7 @@ class Sentence extends Serializable {
 		return this.toCode() === aSentence.toCode();
 	}
 
-	
+
 
 	factory() {
 		return ast;
@@ -30,6 +30,21 @@ class Statement extends Sentence {
 
 
 };
+
+class Command extends Sentence {
+
+
+};
+
+class CustomCommand extends Command {
+
+	constructor(name) {
+		super();
+		this.name = name;
+	}
+
+};
+
 
 class UnProcessedSentence extends Sentence {
 
@@ -69,7 +84,7 @@ class forStatement extends Statement {
 		return code;
 	}
 
-	
+
 
 }
 
@@ -81,7 +96,7 @@ class printStatement extends Statement {
 		this.elements = elements;
 	}
 
-	
+
 	toCode() {
 		var code = "print ";
 		for (var i = 0; i < this.elements.length; i++) {
@@ -143,7 +158,7 @@ class letStatement extends Statement {
 		this.varName = varName;
 		this.expression = anexpression;
 	}
-	
+
 
 	toCode() {
 		var code = "let " + this.varName + " = " + this.expression.toCode();
@@ -185,7 +200,7 @@ class expression extends Serializable {
 
 	}
 
-	
+
 	factory() {
 		return ast;
 	}
@@ -201,7 +216,7 @@ class unaryExpression extends expression {
 		this.operator = operator;
 	}
 
-	
+
 
 	toCode() {
 
@@ -236,8 +251,8 @@ class binaryExpression extends expression {
 		return code;
 	}
 
-	
-	
+
+
 }
 
 
@@ -323,6 +338,9 @@ ast.printStatement = printStatement;
 ast.endStatement = endStatement;
 ast.forStatement = forStatement;
 ast.UnProcessedSentence = UnProcessedSentence;
+ast.CustomCommand = CustomCommand;
+ast.Command = Command;
+ast.Statement = Statement;
 
 
 module.exports = ast;

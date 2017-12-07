@@ -19,11 +19,13 @@ const grammar = {
             "esc": "\\\\",
             "int": "[0-9]+",
             "exp": "(?:[eE][-+]?[0-9]+)",
-            "frac": "(?:\\.[0-9]+)"
+            "frac": "(?:\\.[0-9]+)",
+            "letter": "[a-z]"
+
         },
         "rules": [
-
-            ["[a-z]+", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
+            ["^[ ]*\\.{letter}+", "var yytexTrimmed = yytext.trim(); yytext=yytexTrimmed.substring(1);  return 'COMMAND';"],
+            ["{letter}+", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
             ['"(\\ .|[^"])*"', 'yytext=yytext.substring(1,yytext.length-1); return "STRING_LITERAL";'],
 
 
@@ -75,7 +77,9 @@ const grammar = {
             ["let identifier = e EOF", "$$ = new yy.letStatement($2,$4); return($$);"],
             ["readStatement EOF", "$$=$1; return($$);"],
             ["end EOF", "$$= new yy.endStatement(); return($$);"],
-            ["for identifier = e to e EOF", "$$= new yy.forStatement($2,$4,$6); return($$);"]
+            ["for identifier = e to e EOF", "$$= new yy.forStatement($2,$4,$6); return($$);"],
+            ["COMMAND", "$$ = new yy.CustomCommand($1); return($$); "],
+
 
         ],
 
@@ -147,6 +151,8 @@ const parser = {
 
                     output += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
 
+                } else if (e.message) {
+                    output = e.message;
                 }
             }
             result = new ast.errorStatement(output);

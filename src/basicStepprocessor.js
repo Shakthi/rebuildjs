@@ -35,7 +35,7 @@ BasicStepProcessor.prototype.runStep = function() {
 			prompt: self.setPrompt('rebuildx}')
 		}).then(function(answer) {
 
-			if (answer != "") {
+			if (answer !== "") {
 				try {
 
 					var sentence = parser.parse(answer);
@@ -70,11 +70,19 @@ BasicStepProcessor.prototype.runStep = function() {
 
 };
 
+BasicStepProcessor.prototype.processCommand = function(command) {
+
+	if (command instanceof ast.CustomCommand) {
+
+	} else {
+
+		throw ("Failed to process sentence" + JSON.stringify(command.toJson()));
+	}
 
 
-BasicStepProcessor.prototype.processSentence = function(sentence) {
+}
 
-
+BasicStepProcessor.prototype.processStatement = function(statement) {
 	if (sentence instanceof ast.printStatement) {
 		var output = "";
 
@@ -98,8 +106,33 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 		this.rebuild.console.log("! " + sentence.message);
 	} else {
 
-		this.rebuild.addNewProcessor(this.rebuild.processorFactory.createProcessorsPerSentence(sentence, this.rebuild, this.varTable));
+		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(sentence, this.rebuild, this.varTable);
+		if (processor) {
+
+			this.rebuild.addNewProcessor(processor);
+
+		} else {
+
+			throw ("Failed to process sentence" + JSON.stringify(sentence.toJson()));
+		}
+
+
 	}
+}
+
+BasicStepProcessor.prototype.processSentence = function(sentence) {
+
+	if (sentence instanceof ast.Command) {
+
+		this.processCommand(sentence);
+	} else if (sentence instanceof ast.Statement) {
+		this.processStatement(sentence);
+	} else {
+		throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
+	}
+
+
+
 }
 
 
