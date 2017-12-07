@@ -1,3 +1,5 @@
+"use strict";
+
 var testreadline = {
 	finished: false
 };

@@ -1,3 +1,5 @@
+"use strict";
+
 const Serializable = require('simple-serial-js')
 
 const ast = {};

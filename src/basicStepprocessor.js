@@ -1,3 +1,5 @@
+"use strict";
+
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const parser = require('./parser.js').parser;
 const VarTable = require('./varTable.js');

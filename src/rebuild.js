@@ -1,3 +1,4 @@
+"use strict";
 require('./utils.js');
 
 const promptManager = require('./PromptManager.js');

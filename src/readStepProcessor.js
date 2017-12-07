@@ -1,3 +1,4 @@
+"use strict";
 const superClass = require('./stepprocessor.js').stepProcessor;
 
 var readStepProcessor = function(rebuild, statement, superVarTable) {

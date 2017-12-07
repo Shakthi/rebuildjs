@@ -1,3 +1,4 @@
+"use strict";
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const ast = require("./ast.js");
 const readModule = require('./readStepProcessor.js');

@@ -1,3 +1,4 @@
+"use strict";
 const ast = require("./ast.js");
 const JisonParser = require("jison").Parser;
 

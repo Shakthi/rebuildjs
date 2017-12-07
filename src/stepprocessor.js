@@ -1,3 +1,5 @@
+"use strict";
+
  var lineHistory = require('./history.js');
 
  var prompt = "";
