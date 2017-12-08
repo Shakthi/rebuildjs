@@ -36,10 +36,11 @@ BasicStepProcessor.prototype.runStep = function() {
 			prompt: self.setPrompt('rebuildx}')
 		}).then(function(answer) {
 
+			var sentence = null;
 			if (answer !== "") {
 				try {
 
-					var sentence = parser.parse(answer);
+					sentence = parser.parse(answer);
 					self.rebuild.console.log(sentence.toCode());
 					self.processSentence(sentence);
 
@@ -144,7 +145,7 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 
 
 
-}
+};
 
 
 exports.BasicStepProcessor = BasicStepProcessor;
