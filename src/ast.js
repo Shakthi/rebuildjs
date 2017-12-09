@@ -1,6 +1,6 @@
 "use strict";
 
-const Serializable = require('simple-serial-js')
+const Serializable = require('../../simple-serial-js/');
 
 const ast = {};
 class Sentence extends Serializable {
@@ -22,6 +22,18 @@ class Sentence extends Serializable {
 	factory() {
 		return ast;
 	}
+
+
+	clone() {
+
+		const newObject = Object.create(this.constructor.prototype);
+		newObject.fromJson(this.toJson());
+
+		return newObject;
+
+	}
+
+
 
 };
 
@@ -316,7 +328,7 @@ ast.createSentenceFromJson = function(json) {
 
 ast.sentenceToJson = function(sentence) {
 
-	data = {
+	var data = {
 		constructorName: sentence.constructor.name,
 		content: sentence.toJson()
 

@@ -3,11 +3,11 @@ const readline = require('readline');
 
 var historyCompleter = {
 
-	edit: function(direction, currentInput) {
+	edit: function() {
 		return {
 			result: "ssss",
 			success: false
-		}
+		};
 	},
 
 	onEditEnd: function() {
@@ -21,7 +21,7 @@ var historyCompleter = {
 
 var sessionRecorder = null;
 var self = null;
-
+var historyEdited = false;
 
 function historyReplace(responce) {
 
@@ -29,6 +29,7 @@ function historyReplace(responce) {
 
 		self.line = responce.result;
 		self.cursor = self.line.length;
+		historyEdited = responce.historyEdited;
 
 		self._refreshLine();
 
@@ -66,7 +67,7 @@ exports.getLine = function(options) {
 			historyCompleter = options.history;
 		}
 		if (options.recordSession) {
-			if (sessionRecorder == null) {
+			if (sessionRecorder === null) {
 				sessionRecorder = [];
 			}
 
@@ -114,20 +115,20 @@ exports.getLine = function(options) {
 	};
 
 
-	return new Promise(function(resolve, reject) {
+	return new Promise(function(resolve) {
 
 		rl.on('line', (line) => {
 
 			historyCompleter.onEditEnd();
 			rl.close();
-			resolve(line);
+			resolve({line,historyEdited});
 
 		});
 
 	});
-}
+};
 
 
-exports.getRecordedSession = function(argument) {
+exports.getRecordedSession = function() {
 	return sessionRecorder;
-}
+};

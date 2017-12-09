@@ -3,13 +3,14 @@
 require('./utils.js');
 
 
-const superClass = require("./history.js");
 const ast = require("./ast.js");
 const assert = require('assert');
 
 /* history array contains entries like this.
 ["firstaddedentry",""secondaddedentry",...."justaddedentry"]
 */
+
+
 class SentenceHistory {
 
 	constructor() {
@@ -69,8 +70,6 @@ class SentenceHistory {
 
 	edit(direction, currentBuffer) {
 
-
-
 		var success = true; //current buffer is changed
 
 		assert(this.history.length);
@@ -110,12 +109,14 @@ class SentenceHistory {
 		if (direction != 'none' && this.isAtBeginPosition()) {
 			return {
 				success: success,
+				historyEdited: false,
 				result: this.currentBuffer
 			};
 
 		} else {
 			return {
 				success: success,
+				historyEdited: true,
 				result: this.history[this.historyIndex].toCode()
 			};
 		}
@@ -127,13 +128,18 @@ class SentenceHistory {
 		return this.history;
 	}
 
+	getLastEditedEntry()
+	{
+		return this.history[this.lastEditedIndex];	
+	}
+
 
 
 	fromJson(jsonobj) {
 
 		this.history = jsonobj.content.map(function(argument) {
 			return ast.createSentenceFromJson(argument);
-		})
+		});
 	}
 
 	toJson() {
@@ -145,7 +151,7 @@ class SentenceHistory {
 		return {
 			name: "SentenceHistory",
 			content: contentJSON
-		}
+		};
 
 	}
 

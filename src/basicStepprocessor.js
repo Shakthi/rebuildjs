@@ -20,6 +20,33 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 
 BasicStepProcessor.prototype = Object.create(stepProcessors.prototype);
 
+BasicStepProcessor.prototype.processByMacros = function(answer) {
+	return answer;
+};
+
+BasicStepProcessor.prototype.processInput = function(answer) {
+
+	if (answer.line === "")
+		return null;
+
+	if (answer.historyEdited)
+		return this.history.getLastEditedEntry().clone();
+
+	var sentence = parser.parse(answer.line);
+	this.rebuild.console.info(sentence.toCode());
+	return sentence;
+};
+
+
+
+BasicStepProcessor.prototype.processStep = function(answer) {
+
+	answer = this.processByMacros(answer);
+	var sentence = this.processInput(answer);
+	this.processSentence(sentence);
+};
+
+
 
 BasicStepProcessor.prototype.runStep = function() {
 
@@ -37,28 +64,16 @@ BasicStepProcessor.prototype.runStep = function() {
 		}).then(function(answer) {
 
 			var sentence = null;
-			if (answer !== "") {
-				try {
 
-					sentence = parser.parse(answer);
-					self.rebuild.console.log(sentence.toCode());
-					self.processSentence(sentence);
+			try {
 
-				} catch (e) {
+				sentence = self.processStep(answer);
 
-					self.rebuild.console.log(e);
-				}
+			} catch (e) {
 
-			} else {
-
-				self.rebuild.isAlive = false;
-				self.stepContext.addToHistory = false;
-
-
+				self.rebuild.console.log(e);
 			}
 
-			if (self.stepContext.addToHistory)
-				self.rebuild.addHistoryEntry(sentence);
 			resolve();
 
 		}).catch(function(argument) {
@@ -79,9 +94,16 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 		switch (command.name) {
 			case "list":
 				this.history.getContent().forEach(function(argument) {
+					if (argument instanceof ast.Statement)
+						self.rebuild.console.log(argument.toCode());
+				});
+				break;
+			case "listall":
+				this.history.getContent().forEach(function(argument) {
 					self.rebuild.console.log(argument.toCode());
 				});
 				break;
+
 
 			default:
 				throw ("Unknown command:" + command.name);
@@ -134,7 +156,11 @@ BasicStepProcessor.prototype.processStatement = function(statement) {
 
 BasicStepProcessor.prototype.processSentence = function(sentence) {
 
-	if (sentence instanceof ast.Command) {
+	if (sentence === null) {
+		this.rebuild.isAlive = false;
+		this.stepContext.addToHistory = false;
+
+	} else if (sentence instanceof ast.Command) {
 
 		this.processCommand(sentence);
 	} else if (sentence instanceof ast.Statement) {
@@ -143,9 +169,16 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 		throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	}
 
-
+	this.upadateHistory(sentence);
 
 };
+
+BasicStepProcessor.prototype.upadateHistory = function(sentence) {
+
+	if (this.stepContext.addToHistory)
+		this.rebuild.addHistoryEntry(sentence);
+};
+
 
 
 exports.BasicStepProcessor = BasicStepProcessor;
