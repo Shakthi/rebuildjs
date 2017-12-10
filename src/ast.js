@@ -35,18 +35,17 @@ class Sentence extends Serializable {
 
 
 
-};
+}
 
 
 class Statement extends Sentence {
 
 
-};
+}
 
 class Command extends Sentence {
 
-
-};
+}
 
 class CustomCommand extends Command {
 
@@ -55,13 +54,13 @@ class CustomCommand extends Command {
 		this.name = name;
 	}
 
-};
+}
 
 
 class UnProcessedSentence extends Sentence {
 
 
-};
+}
 
 
 
@@ -78,7 +77,7 @@ class errorStatement extends Statement {
 
 
 
-};
+}
 
 
 
@@ -113,7 +112,7 @@ class printStatement extends Statement {
 		var code = "print ";
 		for (var i = 0; i < this.elements.length; i++) {
 
-			if (i != 0)
+			if (i !== 0)
 				code += ", ";
 
 			code += this.elements[i].toCode();
@@ -123,17 +122,17 @@ class printStatement extends Statement {
 		return code;
 	}
 
-};
+}
 
 class endStatement extends Statement {
-	constructor(elements, prompt) {
+	constructor() {
 		super();
 	}
 	toCode() {
 
 		return "end";
 	}
-};
+}
 
 
 class readStatement extends Statement {
@@ -149,7 +148,7 @@ class readStatement extends Statement {
 		var code = "read ";
 		for (var i = 0; i < this.elements.length; i++) {
 
-			if (i != 0)
+			if (i !== 0)
 				code += ", ";
 			code += this.elements[i];
 		}
@@ -160,7 +159,7 @@ class readStatement extends Statement {
 		return code;
 	}
 
-};
+}
 
 
 class letStatement extends Statement {
@@ -177,7 +176,7 @@ class letStatement extends Statement {
 		return code;
 	}
 
-};
+}
 
 
 class expression extends Serializable {
@@ -191,16 +190,12 @@ class expression extends Serializable {
 		switch (this.operator) {
 			case '+':
 				return this.left.evaluate(context) + this.right.evaluate(context);
-				break;
 			case '-':
 				return this.left.evaluate(context) - this.right.evaluate(context);
-				break;
 			case '*':
 				return this.left.evaluate(context) * this.right.evaluate(context);
-				break;
 			case '/':
 				return this.left.evaluate(context) / this.right.evaluate(context);
-				break;
 			case 'UMINUS':
 				return -this.argument.evaluate(context);
 			case 'GROUP':
