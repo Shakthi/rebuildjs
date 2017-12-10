@@ -105,8 +105,15 @@ class SentenceHistory {
 		}
 
 
+		if (direction === 'none') {
+			return {
+				success: success,
+				historyEdited: false,
+				result: this.history[this.historyIndex].toCode()
+			};
+		}
 
-		if (direction != 'none' && this.isAtBeginPosition()) {
+		if (this.isAtBeginPosition()) {
 			return {
 				success: success,
 				historyEdited: false,
@@ -128,9 +135,8 @@ class SentenceHistory {
 		return this.history;
 	}
 
-	getLastEditedEntry()
-	{
-		return this.history[this.lastEditedIndex];	
+	getLastEditedEntry() {
+		return this.history[this.lastEditedIndex];
 	}
 
 

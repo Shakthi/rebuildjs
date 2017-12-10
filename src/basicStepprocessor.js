@@ -29,7 +29,7 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 	if (answer.line === "")
 		return null;
 
-	if (answer.historyEdited)
+	if (answer.historyEdited && !answer.bufferEdited)
 		return this.history.getLastEditedEntry().clone();
 
 	var sentence = parser.parse(answer.line);
@@ -95,7 +95,8 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 			case "list":
 				this.history.getContent().forEach(function(argument) {
 					if (argument instanceof ast.Statement)
-						self.rebuild.console.log(argument.toCode());
+						if (!(argument instanceof ast.errorStatement))
+							self.rebuild.console.log(argument.toCode());
 				});
 				break;
 			case "listall":
@@ -106,7 +107,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 
 
 			default:
-				throw ("Unknown command:" + command.name);
+				throw ("Unknown command");
 		}
 
 	} else {
@@ -162,7 +163,15 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 
 	} else if (sentence instanceof ast.Command) {
 
-		this.processCommand(sentence);
+		try {
+			this.processCommand(sentence);
+		} catch (e) {
+			if (e != "Unknown command") {
+				throw (e);
+			}
+
+		}
+
 	} else if (sentence instanceof ast.Statement) {
 		this.processStatement(sentence);
 	} else {

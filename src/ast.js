@@ -210,7 +210,7 @@ class expression extends Serializable {
 
 	factory() {
 		return ast;
-	}
+	} 
 
 }
 
@@ -310,7 +310,7 @@ class getExpression extends expression {
 ast.createSentence = function(name) {
 
 	return Object.create(ast[name].prototype);
-}
+};
 
 
 ast.createSentenceFromJson = function(json) {
@@ -319,7 +319,7 @@ ast.createSentenceFromJson = function(json) {
 	object.fromJson(json.content);
 
 	return object;
-}
+};
 
 ast.sentenceToJson = function(sentence) {
 
@@ -330,7 +330,7 @@ ast.sentenceToJson = function(sentence) {
 	};
 
 	return data;
-}
+};
 
 
 

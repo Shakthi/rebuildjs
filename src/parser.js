@@ -139,28 +139,30 @@ const parser = {
             result.src = argument;
         } catch (e) {
 
+            var message = "";
             if (e.hash) {
+
                 if (e.hash.expected) {
 
                     var expected = e.hash.expected;
-                    var output = 'Error expected:';
+                    message = 'ERROR, Expected:';
                     expected.forEach(function(argument) {
-                        output += argument;
-                        output += ' ';
-                    })
+                        message += argument;
+                        message += ',';
+                    });
 
-                    output += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
+                    message += "Found '" + e.hash.token + "'" + "('" + e.hash.text + "')";
 
                 } else if (e.message) {
-                    output = e.message;
+                    message = e.message;
                 }
             }
-            result = new ast.errorStatement(output);
+            result = new ast.errorStatement(message);
             result.src = argument;
         }
 
         return result;
     }
-}
+};
 
 exports.parser = parser;

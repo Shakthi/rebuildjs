@@ -22,9 +22,11 @@ var historyCompleter = {
 var sessionRecorder = null;
 var self = null;
 var historyEdited = false;
+var bufferEdited = false;
 
 function historyReplace(responce) {
 
+	//console.log("historyReplace:", responce);
 	if (responce.success) {
 
 		self.line = responce.result;
@@ -54,6 +56,8 @@ function historyPrevious() {
 
 exports.getLine = function(options) {
 
+	historyEdited = false;
+	bufferEdited = false;
 
 
 	var rl = readline.createInterface({
@@ -109,8 +113,12 @@ exports.getLine = function(options) {
 			historyNext();
 
 		} else {
-
+			var oldline = this.line;
 			ttyWriteOrig(d, key);
+			if (oldline !== this.line) {
+				bufferEdited = true;
+			}
+
 		}
 	};
 
@@ -121,7 +129,14 @@ exports.getLine = function(options) {
 
 			historyCompleter.onEditEnd();
 			rl.close();
-			resolve({line,historyEdited});
+			const result = {
+				line,
+				historyEdited,
+				bufferEdited
+			};
+			//console.log("//historyReplace:", result);
+
+			resolve(result);
 
 		});
 
