@@ -80,14 +80,23 @@ class errorStatement extends Statement {
 }
 
 
+class executableStatement extends Statement {
 
-class forStatement extends Statement {
+
+
+}
+
+
+
+class forStatement extends executableStatement {
 
 	constructor(varName, fromExpression, toExpression) {
 		super();
 		this.varName = varName;
 		this.fromExpression = fromExpression;
 		this.toExpression = toExpression;
+		this.subStatements = [];
+
 	}
 
 	toCode() {
@@ -100,7 +109,7 @@ class forStatement extends Statement {
 }
 
 
-class printStatement extends Statement {
+class printStatement extends executableStatement {
 
 	constructor(elements) {
 		super();
@@ -135,7 +144,7 @@ class endStatement extends Statement {
 }
 
 
-class readStatement extends Statement {
+class readStatement extends executableStatement {
 
 	constructor(elements, prompt) {
 		super();
@@ -162,7 +171,7 @@ class readStatement extends Statement {
 }
 
 
-class letStatement extends Statement {
+class letStatement extends executableStatement {
 
 	constructor(varName, anexpression) {
 		super();
@@ -210,7 +219,7 @@ class expression extends Serializable {
 
 	factory() {
 		return ast;
-	} 
+	}
 
 }
 
@@ -348,6 +357,7 @@ ast.UnProcessedSentence = UnProcessedSentence;
 ast.CustomCommand = CustomCommand;
 ast.Command = Command;
 ast.Statement = Statement;
+ast.executableStatement = executableStatement;
 
 
 module.exports = ast;

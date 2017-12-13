@@ -63,11 +63,9 @@ BasicStepProcessor.prototype.runStep = function() {
 			prompt: self.setPrompt('rebuildx}')
 		}).then(function(answer) {
 
-			var sentence = null;
-
 			try {
 
-				sentence = self.processStep(answer);
+				self.processStep(answer);
 
 			} catch (e) {
 
@@ -88,21 +86,36 @@ BasicStepProcessor.prototype.runStep = function() {
 };
 
 BasicStepProcessor.prototype.processCommand = function(command) {
-	const self = this;
+
+	function multiply(ch, n) {
+		var out = "";
+		for (var i = 0; i < n; i++) {
+			out += ch;
+		}
+		return out;
+	}
+
 	if (command instanceof ast.CustomCommand) {
 
 		switch (command.name) {
 			case "list":
-				this.history.getContent().forEach(function(argument) {
-					if (argument instanceof ast.Statement)
-						if (!(argument instanceof ast.errorStatement))
-							self.rebuild.console.log(argument.toCode());
-				});
+				{
+					let i = 0;
+					this.history.forEach(function(sentence, unused, j) {
+
+						if (sentence instanceof ast.executableStatement)
+								this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
+					}, this);
+				}
 				break;
 			case "listall":
-				this.history.getContent().forEach(function(argument) {
-					self.rebuild.console.log(argument.toCode());
-				});
+				{
+					let i = 0;
+
+					this.history.forEach(function(sentence, unused, j) {
+						this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
+					}, this);
+				}
 				break;
 
 

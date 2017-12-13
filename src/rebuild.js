@@ -6,7 +6,7 @@ const promptManager = require('./PromptManager.js');
 const fs = require('fs');
 const readline = require('./readline.js');
 const testBed = require('./testBed.js');
-const history = require('./sentenceHistory.js');
+const SentenceHistory = require('./sentenceHistory.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 const processorFactory = require('./processorFactory.js');
 const options = require('./options.js');
@@ -21,7 +21,7 @@ const waitingProcessorStack = [];
 
 const historyStack = [];
 
-const lineHistory = new history();
+const lineHistory = new SentenceHistory();
 
 var currentReadlile = readline;
 var isHistoryEnabled = true;
@@ -45,15 +45,15 @@ rebuild.runStep = function() {
 
 		if (!waitingProcessorStack.empty()) {
 
-			rebuild.enterProcessing(waitingProcessorStack.shift())
+			rebuild.enterProcessing(waitingProcessorStack.shift());
 
 		}
 
-		if (processorStack.length == 0) {
+		if (processorStack.length === 0) {
 			reject("empty processor");
 		}
 
-		processorStack.last().runStep().then(function(argument) {
+		processorStack.last().runStep().then(function() {
 
 			if (processorStack.last().isDead) {
 
@@ -72,36 +72,41 @@ rebuild.runStep = function() {
 
 			console.log("Caught ", reason);
 
-		})
+		});
 
 
 
-	})
+	});
 
 
 
-}
+};
 
 rebuild.getLine = function(options) {
 	options.recordSession = true;
 	return currentReadlile.getLine(options);
-}
+};
+
+rebuild.getHistoryStack = function() {
+	return historyStack;
+};
+
 
 rebuild.SetHistoryEnabled = function(value) {
 	isHistoryEnabled = value;
-}
+};
 
 rebuild.addHistoryEntry = function(entry) {
 	if (isHistoryEnabled)
 		historyStack.top().add(entry);
-}
+};
 
 
 
 rebuild.addNewProcessor = function(argument) {
 
 	waitingProcessorStack.push(argument);
-}
+};
 
 rebuild.exitProcessing = function() {
 
@@ -112,7 +117,7 @@ rebuild.exitProcessing = function() {
 
 	processorStack.pop();
 
-}
+};
 
 
 rebuild.enterProcessing = function(argument) {
@@ -127,16 +132,16 @@ rebuild.enterProcessing = function(argument) {
 
 
 
-}
+};
 
 rebuild.getPrompt = function() {
 	return promptManager.getPrompt();
-}
+};
 
 
 rebuild.setPrompt = function(prompt) {
 	return promptManager.setPrompt(prompt);
-}
+};
 
 
 
@@ -144,7 +149,7 @@ rebuild.init = function(argv) {
 
 	this.testCommand = argv.testCommand;
 	this.addNewProcessor(new stepprocessor(rebuild, lineHistory));
-}
+};
 
 
 
@@ -157,7 +162,7 @@ rebuild.save = function() {
 	fs.writeFileSync(getFileSave(), JSON.stringify(obj, null, 2), 'utf8');
 
 
-}
+};
 
 
 
@@ -173,7 +178,7 @@ rebuild.load = function() {
 	}
 
 
-}
+};
 
 
 function getFileSave() {
@@ -185,7 +190,7 @@ rebuild.setReadline = function(areadline) {
 	var old = readline;
 	currentReadlile = areadline;
 	return old;
-}
+};
 
 rebuild.processorFactory = processorFactory;
 rebuild.selfTest = testBed.selftest;

@@ -11,14 +11,13 @@ var historyCompleter;
 var historyArray;
 var index = 0;
 
-const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 
 
 testreadline.init = function(ahistoryArray, atestreadlineFinishCallBack) {
 	historyArray = ahistoryArray.slice(0);
 	testreadlineFinishCallBack = atestreadlineFinishCallBack;
 
-}
+};
 
 testreadline.getLine = function(options) {
 
@@ -32,7 +31,11 @@ testreadline.getLine = function(options) {
 	historyCompleter.onEditBegin();
 	historyCompleter.onEditEnd();
 
-	var ret = Promise.resolve(historyArray[index++]);
+	var ret = Promise.resolve({
+		line: historyArray[index++],
+		historyEdited: false,
+		bufferEdited: true
+	});
 	if (index >= historyArray.length) {
 		this.finished = true;
 		if (testreadlineFinishCallBack) {
@@ -43,7 +46,7 @@ testreadline.getLine = function(options) {
 	return ret;
 
 
-}
+};
 
 
 exports.selftest = function() {

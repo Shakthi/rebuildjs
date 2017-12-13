@@ -1,33 +1,53 @@
 "use strict";
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
-const parser = require('./parser.js').parser;
-
+const ast = require('./ast.js');
+const StackedSentenceHistory = require('./StackedSentenceHistory.js');
 
 class forStepProcessor extends superClass {
 
 	constructor(rebuild, statement, superVarTable) {
-		super(rebuild, null, superVarTable)
+
+		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
 		this.statement = statement;
 		this.varTable = superVarTable;
 		this.initStatus = false;
+
 
 	}
 
 
 	onEnter() {
+		this.history.init();
 		this.initialize();
 		super.onEnter.call(this);
-	};
+	}
 
 	initialize() {
+		this.unarchiveStatement();
 		this.initializeI();
 	}
+
+	archiveStatement() {
+
+		this.statement.clear();
+
+		// this.history.forEach(function(argument) {
+
+		// 	if (sentence instanceof executableStatement)
+		// 		if (!(sentence instanceof ast.errorStatement))
+		// })
+	}
+
+	unarchiveStatement() {
+
+	}
+
 
 	initializeI() {
 		var beginvalue = this.statement.fromExpression.evaluate(this.varTable);
 		this.varTable.setEntry(this.statement.varName, beginvalue);
 		this.initStatus = this.evaluateExitConditionI();
-	};
+	}
 
 
 	getIValue() {
@@ -35,12 +55,26 @@ class forStepProcessor extends superClass {
 	}
 
 	evaluateExitConditionI() {
-		var beginvalue = this.statement.toExpression.evaluate(this.varTable);
+		//var beginvalue = this.statement.toExpression.evaluate(this.varTable);
 		var endvalue = this.statement.toExpression.evaluate(this.varTable);
 		var forValue = this.getIValue();
 
 		return (forValue <= endvalue);
-	};
+	}
+
+	processCommand(command) {
+
+		if (command instanceof ast.CustomCommand) {
+
+			switch (command.name) {
+				default: super.processCommand(command);
+			}
+
+		} else {
+			throw ("Failed to process sentence" + JSON.stringify(command.toJson()));
+		}
+
+	}
 
 
 
@@ -53,7 +87,7 @@ class forStepProcessor extends superClass {
 		};
 
 
-		return new Promise(function(resolve, reject) {
+		return new Promise(function(resolve) {
 
 			if (self.initStatus) {
 
@@ -62,21 +96,8 @@ class forStepProcessor extends superClass {
 					prompt: self.setPrompt("for " + self.statement.varName + "}")
 				}).then(function(answer) {
 
-					if (answer != "") {
-
-						const sentence = parser.parse(answer);
-						self.processSentence(sentence);
-						resolve();
-
-					} else {
-
-						self.stepContext.addToHistory = false;
-						self.rebuild.isAlive = false;
-						resolve();
-
-					}
-
-
+					self.processStep(answer);
+					resolve();
 				});
 
 			} else {
@@ -86,8 +107,7 @@ class forStepProcessor extends superClass {
 					prompt: self.setPrompt("for end}")
 				}).then(function(answer) {
 
-					const sentence = parser.parse(answer);
-					self.processSentence(sentence);
+					self.processStep(answer);
 					self.markDead();
 					resolve();
 
@@ -101,11 +121,27 @@ class forStepProcessor extends superClass {
 		});
 
 
-	};
+	}
 
 	processSentence(argument) {
 		super.processSentence(argument);
 	}
+
+	upadateHistory(sentence) {
+
+		super.upadateHistory(sentence);
+
+		if (this.stepContext.needToHistory) {
+
+			this.history.rewind();
+
+		}
+
+
+
+	}
+
+
 
 }
 exports.forStepProcessor = forStepProcessor;

@@ -135,6 +135,10 @@ class SentenceHistory {
 		return this.history;
 	}
 
+	forEach(fun,that){
+		this.history.forEach(fun,that);
+	}
+
 	getLastEditedEntry() {
 		return this.history[this.lastEditedIndex];
 	}
