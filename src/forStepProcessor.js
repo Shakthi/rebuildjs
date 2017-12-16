@@ -17,9 +17,14 @@ class forStepProcessor extends superClass {
 
 
 	onEnter() {
+		super.onEnter();
 		this.history.init();
 		this.initialize();
-		super.onEnter.call(this);
+	}
+
+	onExit() {
+		this.archiveStatement();
+		super.onExit();
 	}
 
 	initialize() {
@@ -29,17 +34,22 @@ class forStepProcessor extends superClass {
 
 	archiveStatement() {
 
-		this.statement.clear();
 
-		// this.history.forEach(function(argument) {
+		this.statement.subStatements = [];
+		this.history.getContent().forEach(function(statement) {
 
-		// 	if (sentence instanceof executableStatement)
-		// 		if (!(sentence instanceof ast.errorStatement))
-		// })
+			if (statement instanceof ast.executableStatement) {
+				this.statement.subStatements.push(statement);
+			}
+
+		}, this);
 	}
 
 	unarchiveStatement() {
 
+		this.statement.subStatements.forEach(function(argument) {
+			this.history._internalAdd(argument);
+		}, this);
 	}
 
 
@@ -62,12 +72,41 @@ class forStepProcessor extends superClass {
 		return (forValue <= endvalue);
 	}
 
+
+	_runSynchronus() {
+
+		var beginvalue = this.statement.fromExpression.evaluate(this.varTable);
+		this.varTable.setEntry(this.statement.varName, beginvalue);
+
+		function runner(statement) {
+
+			if (statement instanceof ast.executableStatement) {
+				this.processStatement(statement);
+			}
+
+		}
+		while (this.evaluateExitConditionI()) {
+
+			this.history.getContent().forEach(runner, this);
+
+			runner.call(this);
+			this.varTable.setEntry(this.statement.varName, this.varTable.getEntry(this.statement.varName) + 1);
+
+		}
+
+
+	}
+
 	processCommand(command) {
 
 		if (command instanceof ast.CustomCommand) {
 
 			switch (command.name) {
-				default: super.processCommand(command);
+				case 'run':
+					this._runSynchronus();
+					break;
+				default:
+					super.processCommand(command);
 			}
 
 		} else {

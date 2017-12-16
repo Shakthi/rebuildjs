@@ -152,7 +152,7 @@ class readStatement extends executableStatement {
 		this.prompt = prompt;
 	}
 
-
+	
 	toCode() {
 		var code = "read ";
 		for (var i = 0; i < this.elements.length; i++) {

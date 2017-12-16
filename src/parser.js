@@ -4,7 +4,7 @@ const JisonParser = require("jison").Parser;
 
 
 const basicStatmentFun = "\n" +
-    "    var basicStatments = ['print', 'let', 'read', 'if', 'for', 'list','end','to']; \n" +
+    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to']; \n" +
     "\n";
 
 
