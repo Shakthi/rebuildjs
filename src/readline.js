@@ -90,7 +90,7 @@ exports.getLine = function(options) {
 
 	historyCompleter.onEditBegin();
 
-
+    rl.write( historyCompleter.edit('none',"").result);
 
 	var ttyWriteOrig = rl._ttyWrite.bind(rl);
 

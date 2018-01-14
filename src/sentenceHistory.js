@@ -32,10 +32,10 @@ class SentenceHistory {
 		return true;
 	}
 
-	add(entry) {
+	add(entry,options) {
 
 		if (this.checkDuplicate(entry)) {
-			this._internalAdd(entry);
+			this._internalAdd(entry,options);
 
 		}
 	}
@@ -44,6 +44,7 @@ class SentenceHistory {
 
 		this.history.push(entry);
 	}
+
 
 	onEditBegin() {
 

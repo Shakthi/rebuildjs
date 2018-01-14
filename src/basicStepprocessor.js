@@ -191,11 +191,11 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 		throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	}
 
-	this.upadateHistory(sentence);
+	this.updateHistory(sentence);
 
 };
 
-BasicStepProcessor.prototype.upadateHistory = function(sentence) {
+BasicStepProcessor.prototype.updateHistory = function(sentence) {
 
 	if (this.stepContext.addToHistory)
 		this.rebuild.addHistoryEntry(sentence);

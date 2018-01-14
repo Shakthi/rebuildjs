@@ -67,15 +67,23 @@ class StackedSentenceHistory extends superClass {
 	}
 
 
-	_internalAdd(entry) {
+	_internalAdd(entry, options) {
 
-		this.history.splice(this.writeHistoryIndex, 0, entry);
-		this.writeHistoryIndex++;
+		if (options && options.replace)
+			this._replace(entry);
+		else {
+			this.history.splice(this.writeHistoryIndex, 0, entry);
+			this.writeHistoryIndex++;
+		}
+
 	}
 
 	_replace(entry) {
 
 		this.history[this.writeHistoryIndex] = entry;
+		this.writeHistoryIndex++;
+		this.historyIndex = this.writeHistoryIndex;
+
 
 	}
 
@@ -166,6 +174,12 @@ class StackedSentenceHistory extends superClass {
 
 		this.historyIndex = 0;
 		this.writeHistoryIndex = 0;
+	}
+
+
+	popBack() {
+		this.writeHistoryIndex--;
+		this.historyIndex = this.writeHistoryIndex;
 	}
 
 

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
 const ast = require('./ast.js');
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
@@ -77,11 +77,12 @@ class forStepProcessor extends superClass {
 
 		var beginvalue = this.statement.fromExpression.evaluate(this.varTable);
 		this.varTable.setEntry(this.statement.varName, beginvalue);
+		var that = this;
 
 		function runner(statement) {
 
 			if (statement instanceof ast.executableStatement) {
-				this.processStatement(statement);
+				that.processStatement(statement);
 			}
 
 		}
@@ -104,6 +105,17 @@ class forStepProcessor extends superClass {
 			switch (command.name) {
 				case 'run':
 					this._runSynchronus();
+					break;
+				case 'checkback':
+					for (var i = this.history.getContent().length - 1; i >= 0; i--) {
+						if (this.history.getContent()[i] instanceof ast.executableStatement) {
+							this.history.popBack();
+							break;
+						}
+					}
+					this.stepContext.addToHistory = false;
+
+
 					break;
 				default:
 					super.processCommand(command);
@@ -166,16 +178,31 @@ class forStepProcessor extends superClass {
 		super.processSentence(argument);
 	}
 
-	upadateHistory(sentence) {
+	updateHistory(sentence) {
 
-		super.upadateHistory(sentence);
+		if (this.stepContext.addToHistory) {
+			this.addToHistory(sentence);
+		}
 
 		if (this.stepContext.needToHistory) {
 
 			this.history.rewind();
-
 		}
 
+	}
+
+	addToHistory(sentence) {
+
+		const writeContent = this.history.getContent()[this.history.getWriteHistoryIndex()];
+		if (writeContent instanceof ast.UnProcessedSentence) {
+			this.rebuild.addHistoryEntry(sentence, {
+				replace: false
+			});
+		} else {
+			this.rebuild.addHistoryEntry(sentence, {
+				replace: true
+			});
+		}
 
 
 	}

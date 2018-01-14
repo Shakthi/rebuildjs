@@ -96,9 +96,9 @@ rebuild.SetHistoryEnabled = function(value) {
 	isHistoryEnabled = value;
 };
 
-rebuild.addHistoryEntry = function(entry) {
+rebuild.addHistoryEntry = function(entry,options) {
 	if (isHistoryEnabled)
-		historyStack.top().add(entry);
+		historyStack.top().add(entry,options);
 };
 
 
