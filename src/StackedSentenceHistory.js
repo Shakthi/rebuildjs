@@ -55,13 +55,21 @@ class StackedSentenceHistory extends superClass {
 		return this.writeHistoryIndex;
 	}
 
-	checkDuplicate(entry) {
+	checkDuplicate(entry, options) {
+
 
 		if (this.history.length === 1 || this.history.length === 0)
 			return true;
 
-		if (this.history[this.writeHistoryIndex - 1].isEqual(entry))
-			return false;
+		if (options.replace === true) {
+			if (this.history[this.writeHistoryIndex].isEqual(entry))
+				return true;
+		} else {
+			if (this.history[this.writeHistoryIndex - 1].isEqual(entry))
+				return false;
+		}
+
+
 
 		return true;
 	}

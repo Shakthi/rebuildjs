@@ -106,6 +106,9 @@ class forStepProcessor extends superClass {
 				case 'run':
 					this._runSynchronus();
 					break;
+				case 'rewind':
+					this.stepContext.needToRewindHistory = true;
+					break;
 				case 'checkback':
 					for (var i = this.history.getContent().length - 1; i >= 0; i--) {
 						if (this.history.getContent()[i] instanceof ast.executableStatement) {
@@ -184,7 +187,7 @@ class forStepProcessor extends superClass {
 			this.addToHistory(sentence);
 		}
 
-		if (this.stepContext.needToHistory) {
+		if (this.stepContext.needToRewindHistory) {
 
 			this.history.rewind();
 		}

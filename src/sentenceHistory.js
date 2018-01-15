@@ -34,7 +34,7 @@ class SentenceHistory {
 
 	add(entry,options) {
 
-		if (this.checkDuplicate(entry)) {
+		if (this.checkDuplicate(entry, options)) {
 			this._internalAdd(entry,options);
 
 		}
