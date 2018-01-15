@@ -112,8 +112,9 @@ class forStepProcessor extends superClass {
 				case 'checkback':
 					for (var i = this.history.getContent().length - 1; i >= 0; i--) {
 						if (this.history.getContent()[i] instanceof ast.executableStatement) {
-							this.history.popBack();
 							break;
+						} else {
+							this.history.popBack();
 						}
 					}
 					this.stepContext.addToHistory = false;
