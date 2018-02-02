@@ -3,6 +3,13 @@ const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
 const ast = require('./ast.js');
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
 
+const AsyncRun = 'AsyncRun',
+	Editing = 'Editing',
+	NonEditing = 'NonEditing',
+	Waiting = 'Waiting';
+
+
+
 class forStepProcessor extends superClass {
 
 	constructor(rebuild, statement, superVarTable) {
@@ -10,7 +17,8 @@ class forStepProcessor extends superClass {
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
 		this.statement = statement;
 		this.varTable = superVarTable;
-		this.initStatus = false;
+		this.initStatus = Waiting;
+
 
 
 	}
@@ -30,6 +38,8 @@ class forStepProcessor extends superClass {
 	initialize() {
 		this.unarchiveStatement();
 		this.initializeI();
+		this.initStatus = this.evaluateExitConditionI() ? Editing : NonEditing;
+
 	}
 
 	archiveStatement() {
@@ -56,7 +66,6 @@ class forStepProcessor extends superClass {
 	initializeI() {
 		var beginvalue = this.statement.fromExpression.evaluate(this.varTable);
 		this.varTable.setEntry(this.statement.varName, beginvalue);
-		this.initStatus = this.evaluateExitConditionI();
 	}
 
 
@@ -70,6 +79,10 @@ class forStepProcessor extends superClass {
 		var forValue = this.getIValue();
 
 		return (forValue <= endvalue);
+	}
+
+	incrementI() {
+		this.varTable.setEntry(this.statement.varName, this.varTable.getEntry(this.statement.varName) + 1);
 	}
 
 
@@ -90,13 +103,14 @@ class forStepProcessor extends superClass {
 
 			this.history.getContent().forEach(runner, this);
 
-			runner.call(this);
-			this.varTable.setEntry(this.statement.varName, this.varTable.getEntry(this.statement.varName) + 1);
-
+			//runner.call(this);
+			this.incrementI();
 		}
 
 
 	}
+
+
 
 	processCommand(command) {
 
@@ -104,7 +118,10 @@ class forStepProcessor extends superClass {
 
 			switch (command.name) {
 				case 'run':
-					this._runSynchronus();
+					this.lineHistory.historyIndex = 0; //TODO: not to access the variable
+					this.initStatus = AsyncRun;
+					this.initializeI();
+					//this._runSynchronus();
 					break;
 				case 'rewind':
 					this.stepContext.needToRewindHistory = true;
@@ -135,52 +152,93 @@ class forStepProcessor extends superClass {
 
 	runStep() {
 
-		var self = this;
-
-		self.stepContext = {
-			addToHistory: true
-		};
+		var that = this;
 
 
-		return new Promise(function(resolve) {
 
-			if (self.initStatus) {
+		function runner(statement) {
 
-				self.rebuild.getLine({
-					history: self.lineHistory,
-					prompt: self.setPrompt("for " + self.statement.varName + "}")
-				}).then(function(answer) {
-
-					self.processStep(answer);
-					resolve();
-				});
-
-			} else {
-
-				self.rebuild.getLine({
-					history: self.lineHistory,
-					prompt: self.setPrompt("for end}")
-				}).then(function(answer) {
-
-					self.processStep(answer);
-					self.markDead();
-					resolve();
-
-
-				});
-
+			if (statement instanceof ast.executableStatement) {
+				that.processStatement(statement);
 			}
 
+		}
+
+		if (this.initStatus === AsyncRun) {
+
+			return new Promise(resolve => {
+
+				if (this.lineHistory.historyIndex === 0) {
+					if (!this.evaluateExitConditionI()) {
+						this.initializeI();
+						this.lineHistory.rewind();
+
+						this.initStatus = Editing;
+						resolve();
+						return;
+					}
+				}
+
+				runner(this.history.getContent()[this.lineHistory.historyIndex]);
+				this.lineHistory.historyIndex++;
+
+				if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
+					this.incrementI();
+					this.lineHistory.historyIndex = 0;
+				}
+
+				resolve();
+			});
 
 
-		});
+
+		} else {
+
+			var self = this;
+
+			self.stepContext = {
+				addToHistory: true
+			};
+
+
+			return new Promise(function(resolve) {
+
+				if (self.initStatus) {
+
+					self.rebuild.getLine({
+						history: self.lineHistory,
+						prompt: self.setPrompt("for " + self.statement.varName + "}")
+					}).then(function(answer) {
+
+						self.processStep(answer);
+						resolve();
+					});
+
+				} else {
+
+					self.rebuild.getLine({
+						history: self.lineHistory,
+						prompt: self.setPrompt("for end}")
+					}).then(function(answer) {
+
+						self.processStep(answer);
+						self.markDead();
+						resolve();
+
+
+					});
+
+				}
+
+
+
+			});
+		}
+
 
 
 	}
 
-	processSentence(argument) {
-		super.processSentence(argument);
-	}
 
 	updateHistory(sentence) {
 
@@ -198,15 +256,18 @@ class forStepProcessor extends superClass {
 	addToHistory(sentence) {
 
 		const writeContent = this.history.getContent()[this.history.getWriteHistoryIndex()];
+		var replace = false;
 		if (writeContent instanceof ast.UnProcessedSentence) {
-			this.rebuild.addHistoryEntry(sentence, {
-				replace: false
-			});
+			replace = false;
 		} else {
-			this.rebuild.addHistoryEntry(sentence, {
-				replace: true
-			});
+			replace = true;
 		}
+
+		this.rebuild.addHistoryEntry(sentence, {
+			replace: replace,
+			incrementer: (statement => statement instanceof ast.executableStatement ||
+				statement instanceof ast.UnProcessedSentence)
+		});
 
 
 	}

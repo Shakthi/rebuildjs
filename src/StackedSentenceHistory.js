@@ -77,21 +77,32 @@ class StackedSentenceHistory extends superClass {
 
 	_internalAdd(entry, options) {
 
-		if (options && options.replace)
-			this._replace(entry);
+		if (!options) {
+			options = {};
+		}
+
+		if (options.replace)
+			this._replace(entry, options);
 		else {
 			this.history.splice(this.writeHistoryIndex, 0, entry);
-			this.writeHistoryIndex++;
+
+			do {
+				this.writeHistoryIndex++;
+			} while (options.incrementer && !options.incrementer(this.history[this.writeHistoryIndex]));
+			this.historyIndex = this.writeHistoryIndex;
+
+
 		}
 
 	}
 
-	_replace(entry) {
-
+	_replace(entry, options) {
 		this.history[this.writeHistoryIndex] = entry;
-		this.writeHistoryIndex++;
-		this.historyIndex = this.writeHistoryIndex;
 
+		do {
+			this.writeHistoryIndex++;
+		} while (options.incrementer && !options.incrementer(this.history[this.writeHistoryIndex]));
+		this.historyIndex = this.writeHistoryIndex;
 
 	}
 
