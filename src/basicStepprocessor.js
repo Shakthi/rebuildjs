@@ -104,7 +104,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 					this.history.forEach(function(sentence, unused, j) {
 
 						if (sentence instanceof ast.executableStatement)
-								this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
+							this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
 					}, this);
 				}
 				break;
@@ -130,6 +130,13 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 
 };
 
+BasicStepProcessor.prototype.processEndStatement = function() {
+
+	this.isDead = true;
+	this.stepContext.addToHistory = false;
+
+};
+
 BasicStepProcessor.prototype.processStatement = function(statement) {
 	if (statement instanceof ast.printStatement) {
 		var output = "";
@@ -146,8 +153,7 @@ BasicStepProcessor.prototype.processStatement = function(statement) {
 
 	} else if (statement instanceof ast.endStatement) {
 
-		this.isDead = true;
-		this.stepContext.addToHistory = false;
+		this.processEndStatement();
 
 	} else if (statement instanceof ast.errorStatement) {
 

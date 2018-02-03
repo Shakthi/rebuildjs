@@ -4,6 +4,7 @@ const ast = require('./ast.js');
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
 
 const AsyncRun = 'AsyncRun',
+	AsyncLastRun = 'AsyncLastRun',
 	Editing = 'Editing',
 	NonEditing = 'NonEditing',
 	Waiting = 'Waiting';
@@ -111,6 +112,14 @@ class forStepProcessor extends superClass {
 	}
 
 
+	processEndStatement() {
+
+		this.initStatus = AsyncLastRun;
+		this.stepContext.addToHistory = false;
+
+	}
+
+
 
 	processCommand(command) {
 
@@ -121,7 +130,7 @@ class forStepProcessor extends superClass {
 					this.lineHistory.historyIndex = 0; //TODO: not to access the variable
 					this.initStatus = AsyncRun;
 					this.initializeI();
-					//this._runSynchronus();
+
 					break;
 				case 'rewind':
 					this.stepContext.needToRewindHistory = true;
@@ -164,7 +173,7 @@ class forStepProcessor extends superClass {
 
 		}
 
-		if (this.initStatus === AsyncRun) {
+		if (this.initStatus === AsyncRun || this.initStatus === AsyncLastRun) {
 
 			return new Promise(resolve => {
 
@@ -172,8 +181,12 @@ class forStepProcessor extends superClass {
 					if (!this.evaluateExitConditionI()) {
 						this.initializeI();
 						this.lineHistory.rewind();
-
+						if (this.initStatus === AsyncLastRun)
+							this.isDead = true;
 						this.initStatus = Editing;
+
+
+
 						resolve();
 						return;
 					}
