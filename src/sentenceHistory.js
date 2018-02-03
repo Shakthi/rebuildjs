@@ -12,11 +12,11 @@ const assert = require('assert');
 
 
 class SentenceHistory {
-	
+
 	constructor() {
 		this.history = [];
 		this.historyIndex = 0;
-		this.lastEditedIndex = 0;
+		this.lastEditedEntry = null;
 		this.currentBuffer = '';
 	}
 
@@ -55,10 +55,10 @@ class SentenceHistory {
 
 	onEditEnd() {
 		if (!this.isAtBeginPosition()) {
-			this.lastEditedIndex = this.historyIndex;
+			this.lastEditedEntry = this.history[this.historyIndex];
 		} else {
 			this.historyIndex--;
-			this.lastEditedIndex = -1;
+			this.lastEditedEntry = null;
 		}
 
 		this.history.pop();
@@ -141,7 +141,7 @@ class SentenceHistory {
 	}
 
 	getLastEditedEntry() {
-		return this.history[this.lastEditedIndex];
+		return this.lastEditedEntry;
 	}
 
 
