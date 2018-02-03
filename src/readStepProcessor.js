@@ -55,13 +55,13 @@ readStepProcessor.prototype.runStep = function() {
 					self.varTable.setEntry(self.statement.elements[0], inputval);
 				}
 
-				self.isDead = true;
+				self.markDead();
 
 
 
 			} else {
 
-				self.isDead = true;
+				self.markDead();;
 
 			}
 

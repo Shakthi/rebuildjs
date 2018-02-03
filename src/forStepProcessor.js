@@ -155,7 +155,7 @@ class forStepProcessor extends superClass {
 					break;
 				case 'quit':
 					this.status = Quit;
-					this.isDead = true;
+					this.markDead();
 					break;
 
 				case 'checkback':
@@ -205,7 +205,7 @@ class forStepProcessor extends superClass {
 						this.initializeI();
 						this.lineHistory.rewind();
 						if (this.status === AsyncLastRun)
-							this.isDead = true;
+							this.markDead();
 						this.status = Editing;
 
 
@@ -239,7 +239,7 @@ class forStepProcessor extends superClass {
 
 			return new Promise(function(resolve) {
 
-				if (self.status) {
+				if (self.status === Editing) {
 
 					self.rebuild.getLine({
 						history: self.lineHistory,
@@ -250,7 +250,7 @@ class forStepProcessor extends superClass {
 						resolve();
 					});
 
-				} else {
+				} else if (self.status === NonEditing) {
 
 					self.rebuild.getLine({
 						history: self.lineHistory,
