@@ -12,7 +12,7 @@ const assert = require('assert');
 
 
 class SentenceHistory {
-
+	
 	constructor() {
 		this.history = [];
 		this.historyIndex = 0;

@@ -54,13 +54,11 @@ exports.selftest = function() {
 
 	var rebuild = this;
 
-	if (!rebuild.options.needSelfTest) {
-		return Promise.resolve();
-	}
 
-	var oldReadline = rebuild.setReadline(testreadline);
 
 	if (rebuild.testCommand) {
+		var oldReadline = rebuild.setReadline(testreadline);
+
 		testreadline.init(rebuild.testCommand.split(';'), function() {
 
 			rebuild.setReadline(oldReadline);
@@ -72,9 +70,18 @@ exports.selftest = function() {
 
 
 	} else {
-		testreadline.init(rebuild.lineHistory.getContent());
-		rebuild.SetHistoryEnabled(false);
-		//rebuild.console.setEnabled(false);
+
+		if (rebuild.options.needSelfTest) {
+			testreadline.init(rebuild.lineHistory.getContent());
+			rebuild.SetHistoryEnabled(false);
+			//rebuild.console.setEnabled(false);
+
+
+		} else {
+			return Promise.resolve();
+		}
+
+
 	}
 
 

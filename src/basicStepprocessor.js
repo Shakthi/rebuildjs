@@ -108,6 +108,15 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 					}, this);
 				}
 				break;
+			case "stepin":
+				{
+
+					const lastStatement = this.history.getLastEditedEntry();
+					if (lastStatement instanceof ast.executableStatement) {
+						this.stepInStatement(lastStatement);
+					}
+				}
+				break;
 			case "listall":
 				{
 					let i = 0;
@@ -137,7 +146,14 @@ BasicStepProcessor.prototype.processEndStatement = function() {
 
 };
 
-BasicStepProcessor.prototype.processStatement = function(statement) {
+BasicStepProcessor.prototype.stepInStatement = function(statement) {
+
+	this.processStatement(statement, {
+		debug: 'stepin'
+	});
+}
+
+BasicStepProcessor.prototype.processStatement = function(statement,options) {
 	if (statement instanceof ast.printStatement) {
 		var output = "";
 
@@ -160,7 +176,7 @@ BasicStepProcessor.prototype.processStatement = function(statement) {
 		this.rebuild.console.log("! " + statement.message);
 	} else {
 
-		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable);
+		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable,options);
 		if (processor) {
 
 			this.rebuild.addNewProcessor(processor);

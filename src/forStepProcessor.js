@@ -7,19 +7,24 @@ const AsyncRun = 'AsyncRun',
 	AsyncLastRun = 'AsyncLastRun',
 	Editing = 'Editing',
 	NonEditing = 'NonEditing',
-	Waiting = 'Waiting';
+	Waiting = 'Waiting',
+	Quit = 'Quit';
 
 
 
 class forStepProcessor extends superClass {
 
-	constructor(rebuild, statement, superVarTable) {
+	constructor(rebuild, statement, superVarTable, options) {
 
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
 		this.statement = statement;
 		this.varTable = superVarTable;
-		this.initStatus = Waiting;
+		this.status = Waiting;
+		this.options = options;
 
+		if (!options) {
+			this.options = {};
+		}
 
 
 	}
@@ -32,14 +37,27 @@ class forStepProcessor extends superClass {
 	}
 
 	onExit() {
-		this.archiveStatement();
+		if (this.status != Quit)
+			this.archiveStatement();
 		super.onExit();
 	}
 
 	initialize() {
 		this.unarchiveStatement();
 		this.initializeI();
-		this.initStatus = this.evaluateExitConditionI() ? Editing : NonEditing;
+		this.history.historyIndex =0;
+
+		this.status = this.evaluateExitConditionI() ? Editing : NonEditing;
+
+
+		if (this.statement.subStatements.length) {
+			if (this.options.debug !== 'stepin') {
+				this.status = AsyncLastRun;
+			}else{
+				this.history.rewind();
+			}
+
+		}
 
 	}
 
@@ -114,7 +132,7 @@ class forStepProcessor extends superClass {
 
 	processEndStatement() {
 
-		this.initStatus = AsyncLastRun;
+		this.status = AsyncLastRun;
 		this.stepContext.addToHistory = false;
 
 	}
@@ -128,13 +146,18 @@ class forStepProcessor extends superClass {
 			switch (command.name) {
 				case 'run':
 					this.lineHistory.historyIndex = 0; //TODO: not to access the variable
-					this.initStatus = AsyncRun;
+					this.status = AsyncRun;
 					this.initializeI();
 
 					break;
 				case 'rewind':
 					this.stepContext.needToRewindHistory = true;
 					break;
+				case 'quit':
+					this.status = Quit;
+					this.isDead = true;
+					break;
+
 				case 'checkback':
 					for (var i = this.history.getContent().length - 1; i >= 0; i--) {
 						if (this.history.getContent()[i] instanceof ast.executableStatement) {
@@ -173,7 +196,7 @@ class forStepProcessor extends superClass {
 
 		}
 
-		if (this.initStatus === AsyncRun || this.initStatus === AsyncLastRun) {
+		if (this.status === AsyncRun || this.status === AsyncLastRun) {
 
 			return new Promise(resolve => {
 
@@ -181,9 +204,9 @@ class forStepProcessor extends superClass {
 					if (!this.evaluateExitConditionI()) {
 						this.initializeI();
 						this.lineHistory.rewind();
-						if (this.initStatus === AsyncLastRun)
+						if (this.status === AsyncLastRun)
 							this.isDead = true;
-						this.initStatus = Editing;
+						this.status = Editing;
 
 
 
@@ -216,7 +239,7 @@ class forStepProcessor extends superClass {
 
 			return new Promise(function(resolve) {
 
-				if (self.initStatus) {
+				if (self.status) {
 
 					self.rebuild.getLine({
 						history: self.lineHistory,

@@ -1,7 +1,7 @@
 "use strict";
 const options = {
 
-	needSelfTest: true,
+	needSelfTest: false,
 	executeCommandLine: true,
 	executeCommandLineNormally: true
 

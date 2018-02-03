@@ -101,6 +101,9 @@ class forStatement extends executableStatement {
 
 	toCode() {
 		var code = "for " + this.varName + " = " + this.fromExpression.toCode() + " to " + this.toExpression.toCode();
+		if (this.subStatements && this.subStatements.length) {
+			code += ":";
+		}
 		return code;
 	}
 
@@ -152,7 +155,7 @@ class readStatement extends executableStatement {
 		this.prompt = prompt;
 	}
 
-	
+
 	toCode() {
 		var code = "read ";
 		for (var i = 0; i < this.elements.length; i++) {
