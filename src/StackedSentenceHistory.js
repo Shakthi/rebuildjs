@@ -44,7 +44,7 @@ class StackedSentenceHistory extends superClass {
 	}
 
 	onEditEnd() {
-		this.lastEditedIndex = this.historyIndex;
+		this.lastEditedEntry = this.stack[this.currentStackIndex].history[this.historyIndex];
 	}
 
 	isAtBeginPosition() {
