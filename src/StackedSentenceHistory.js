@@ -38,8 +38,7 @@ class StackedSentenceHistory extends superClass {
 	}
 
 	onEditBegin() {
-
-
+		this.currentStackIndex = this.stack.length - 1;
 		this.historyIndex = this.writeHistoryIndex;
 	}
 
