@@ -18,7 +18,7 @@ class forStepProcessor extends superClass {
 
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
 		this.statement = statement;
-		this.varTable = superVarTable;
+		this.varTable.superEntry = superVarTable;
 		this.status = Waiting;
 		this.options = options;
 
