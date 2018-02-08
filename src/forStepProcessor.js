@@ -5,7 +5,7 @@ const StackedSentenceHistory = require('./StackedSentenceHistory.js');
 const Enum = require('enum');
 
 
-const Status = new Enum(['Idle', 'Edit', 'Run','Dead']);
+const Status = new Enum(['Idle', 'Edit', 'Run', 'Dead']);
 
 
 
@@ -104,33 +104,33 @@ class forStepProcessor extends superClass {
 		if (this._isClosed() && this._isMature() && this._isForced()) {
 
 			this.rewind();
+			this.status = Status.Edit;
 		}
 
-		if (this._isClosed() && !this._isMature() && !this._isForced())
-		{
-			this.markDead();
-			
+		if (this._isClosed() && !this._isMature() && !this._isForced()) {
+			this.status = Status.Dead;
+
 		}
 
-		if (this._isClosed() && !this._isMature() && this._isForced())
-		{
-			//Recomment
-			
+		if (this._isClosed() && !this._isMature() && this._isForced()) {
+			this.rewind();
+			this.status = Status.Edit;
+
 		}
 
 
 
-		if (!this._isClosed() && this._isMature() ) {
+		if (!this._isClosed() && this._isMature()) {
 
-			//typing code
+			this.rewind();
+			this.status = Status.Edit;
 		}
 
-		if (!this._isClosed() && !this._isMature() )
-		{
-			//Recomment			
-		}
+		if (!this._isClosed() && !this._isMature()) {
 
-		
+			this.rewind();
+			this.status = Status.Edit;
+		}
 
 
 
