@@ -1,11 +1,13 @@
 'use strict';
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
 const ast = require('./ast.js');
+
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
 const Enum = require('enum');
+const assert = require('assert');
 
 
-const Status = new Enum(['Idle', 'Edit', 'Run', 'Dead']);
+const Status = new Enum(['Idle', 'Edit', 'Run', 'LastRun', 'Dead']);
 
 
 
@@ -80,7 +82,7 @@ class forStepProcessor extends superClass {
 
 	_isMature() {
 
-		return !this.evaluateExitConditionI();
+		return this.evaluateExitConditionI();
 	}
 
 	__isForced() {
@@ -101,37 +103,23 @@ class forStepProcessor extends superClass {
 			this.status = Status.Run;
 		}
 
-		if (this._isClosed() && this._isMature() && this._isForced()) {
 
-			this.rewind();
-			this.status = Status.Edit;
-		}
 
 		if (this._isClosed() && !this._isMature() && !this._isForced()) {
 			this.status = Status.Dead;
 
 		}
 
-		if (this._isClosed() && !this._isMature() && this._isForced()) {
-			this.rewind();
-			this.status = Status.Edit;
-
-		}
 
 
-
-		if (!this._isClosed() && this._isMature()) {
+		if (!this._isClosed() || this._isForced()) {
 
 			this.rewind();
 			this.status = Status.Edit;
 		}
 
-		if (!this._isClosed() && !this._isMature()) {
 
-			this.rewind();
-			this.status = Status.Edit;
-		}
-
+		assert(this.status != Status.Idle);
 
 
 	}
@@ -281,84 +269,74 @@ class forStepProcessor extends superClass {
 
 		}
 
-		if (this.status === AsyncRun || this.status === AsyncLastRun) {
+		return new Promise(resolve => {
 
-			return new Promise(resolve => {
 
-				if (this.lineHistory.historyIndex === 0) {
-					if (!this.evaluateExitConditionI()) {
-						this.initializeI();
-						this.lineHistory.rewind();
-						if (this.status === AsyncLastRun)
+			switch (this.status) {
+				case Status.Dead:
+					break; //Do nothing it will last step
+				case Status.Run:
+				case Status.LastRun:
+					const ret = runner(this.history.getContent()[this.lineHistory.historyIndex]);
+					if (ret) {
+						this.status = Status.Edit;
+						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+					} else {
+						this.lineHistory.historyIndex++;
+
+						if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
+							this.incrementI();
+
+							if (!this._isMature()) {
+
+								if (this.status == Status.LastRun) {
+									this.status = Status.Dead;
+									this.markDead();
+								} else {
+									this.initializeI();
+									this.lineHistory.rewind();
+									this.status = Status.Edit;
+								}
+							}
+						}
+					}
+					break;
+
+				case Status.Edit:
+
+					this.stepContext = {
+						addToHistory: true
+					};
+
+					if (this._isMature()) {
+
+						this.rebuild.getLine({
+							history: this.lineHistory,
+							prompt: this.setPrompt("for " + that.statement.varName + "}")
+						}).then(function(answer) {
+
+							that.processStep(answer);
+						});
+
+					} else {
+
+						this.rebuild.getLine({
+							history: this.lineHistory,
+							prompt: this.setPrompt("for end}")
+						}).then(function(answer) {
+
+							this.processElseStatement(answer);
 							this.markDead();
-						this.status = Editing;
 
 
+						});
 
-						resolve();
-						return;
 					}
-				}
 
-				const ret = runner(this.history.getContent()[this.lineHistory.historyIndex]);
-				if (ret) {
-					this.status = Editing;
-					this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-				} else {
-					this.lineHistory.historyIndex++;
+			}
 
-					if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
-						this.incrementI();
-						this.lineHistory.historyIndex = 0;
-					}
-				}
-
-				resolve();
-			});
-
-
-
-		} else {
-
-
-			that.stepContext = {
-				addToHistory: true
-			};
-
-
-			return new Promise(function(resolve) {
-
-				if (that.status === Editing) {
-
-					that.rebuild.getLine({
-						history: that.lineHistory,
-						prompt: that.setPrompt("for " + that.statement.varName + "}")
-					}).then(function(answer) {
-
-						that.processStep(answer);
-						resolve();
-					});
-
-				} else if (that.status === NonEditing) {
-
-					that.rebuild.getLine({
-						history: that.lineHistory,
-						prompt: that.setPrompt("for end}")
-					}).then(function(answer) {
-
-						that.processElseStatement(answer);
-						that.markDead();
-						resolve();
-
-
-					});
-
-				}
-
-
-
-			});
-		}
+			resolve();
+		});
 
 
 

@@ -14,6 +14,7 @@
   "author": "Shakthi Prasad G S",
   "license": "MIT",
   "dependencies": {
+    "assert": "^1.4.1",
     "enum": "^2.5.0",
     "readline-ui": "^2.2.3"
   },
