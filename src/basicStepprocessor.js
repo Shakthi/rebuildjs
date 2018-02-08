@@ -153,7 +153,7 @@ BasicStepProcessor.prototype.stepInStatement = function(statement) {
 	});
 }
 
-BasicStepProcessor.prototype.processStatement = function(statement,options) {
+BasicStepProcessor.prototype.processStatement = function(statement, options) {
 	if (statement instanceof ast.printStatement) {
 		var output = "";
 
@@ -176,7 +176,7 @@ BasicStepProcessor.prototype.processStatement = function(statement,options) {
 		this.rebuild.console.log("! " + statement.message);
 	} else {
 
-		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable,options);
+		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
 		if (processor) {
 
 			this.rebuild.addNewProcessor(processor);
@@ -209,6 +209,8 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 
 	} else if (sentence instanceof ast.Statement) {
 		this.processStatement(sentence);
+	} else if (sentence instanceof ast.LineComment) {
+		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	} else {
 		throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	}

@@ -2,6 +2,12 @@
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
 const ast = require('./ast.js');
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
+const Enum = require('enum');
+
+
+const Status = new Enum(['Idle', 'Edit', 'Run','Dead']);
+
+
 
 const AsyncRun = 'AsyncRun',
 	AsyncLastRun = 'AsyncLastRun',
@@ -9,7 +15,32 @@ const AsyncRun = 'AsyncRun',
 	NonEditing = 'NonEditing',
 	Waiting = 'Waiting',
 	Quit = 'Quit';
+/* For step is complicated 
+There are two factor that contributing its complication
+1.It has loop
+2.It has a histoy
 
+
+#Different states of for step
+#1. Empty
+#2. Has Content
+#3. Executable
+#4. Not executable
+
+Different states of for step
+
+1. Open or close - Open to add content are closed
+2. Ripe or unRipe
+
+
+
+
+
+
+
+
+
+*/
 
 
 class forStepProcessor extends superClass {
@@ -19,7 +50,7 @@ class forStepProcessor extends superClass {
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
 		this.statement = statement;
 		this.varTable.superEntry = superVarTable;
-		this.status = Waiting;
+		this.status = Status.Idle;
 		this.options = options;
 
 		if (!options) {
@@ -42,22 +73,66 @@ class forStepProcessor extends superClass {
 		super.onExit();
 	}
 
+	_isClosed() {
+
+		return this.statement.subStatements.length > 0;
+	}
+
+	_isMature() {
+
+		return !this.evaluateExitConditionI();
+	}
+
+	__isForced() {
+
+		return this.options.debug === 'stepin';
+	}
+
+
+
 	initialize() {
 		this.unarchiveStatement();
 		this.initializeI();
-		this.history.historyIndex =0;
-
-		this.status = this.evaluateExitConditionI() ? Editing : NonEditing;
+		this.history.historyIndex = 0;
 
 
-		if (this.statement.subStatements.length) {
-			if (this.options.debug !== 'stepin') {
-				this.status = AsyncLastRun;
-			}else{
-				this.history.rewind();
-			}
 
+		if (this._isClosed() && this._isMature() && !this._isForced()) {
+			this.status = Status.Run;
 		}
+
+		if (this._isClosed() && this._isMature() && this._isForced()) {
+
+			this.rewind();
+		}
+
+		if (this._isClosed() && !this._isMature() && !this._isForced())
+		{
+			this.markDead();
+			
+		}
+
+		if (this._isClosed() && !this._isMature() && this._isForced())
+		{
+			//Recomment
+			
+		}
+
+
+
+		if (!this._isClosed() && this._isMature() ) {
+
+			//typing code
+		}
+
+		if (!this._isClosed() && !this._isMature() )
+		{
+			//Recomment			
+		}
+
+		
+
+
 
 	}
 
@@ -67,7 +142,7 @@ class forStepProcessor extends superClass {
 		this.statement.subStatements = [];
 		this.history.getContent().forEach(function(statement) {
 
-			if (statement instanceof ast.executableStatement) {
+			if (statement instanceof ast.executableStatement || statement instanceof ast.LineComment) {
 				this.statement.subStatements.push(statement);
 			}
 
@@ -138,6 +213,12 @@ class forStepProcessor extends superClass {
 	}
 
 
+	processElseStatement(answer) {
+
+		this.processSentence(new ast.LineComment('#' + answer.line));
+	}
+
+
 
 	processCommand(command) {
 
@@ -190,6 +271,10 @@ class forStepProcessor extends superClass {
 
 		function runner(statement) {
 
+			if (statement instanceof ast.LineComment) {
+				return 10;
+			}
+
 			if (statement instanceof ast.executableStatement) {
 				that.processStatement(statement);
 			}
@@ -215,12 +300,17 @@ class forStepProcessor extends superClass {
 					}
 				}
 
-				runner(this.history.getContent()[this.lineHistory.historyIndex]);
-				this.lineHistory.historyIndex++;
+				const ret = runner(this.history.getContent()[this.lineHistory.historyIndex]);
+				if (ret) {
+					this.status = Editing;
+					this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+				} else {
+					this.lineHistory.historyIndex++;
 
-				if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
-					this.incrementI();
-					this.lineHistory.historyIndex = 0;
+					if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
+						this.incrementI();
+						this.lineHistory.historyIndex = 0;
+					}
 				}
 
 				resolve();
@@ -230,35 +320,34 @@ class forStepProcessor extends superClass {
 
 		} else {
 
-			var self = this;
 
-			self.stepContext = {
+			that.stepContext = {
 				addToHistory: true
 			};
 
 
 			return new Promise(function(resolve) {
 
-				if (self.status === Editing) {
+				if (that.status === Editing) {
 
-					self.rebuild.getLine({
-						history: self.lineHistory,
-						prompt: self.setPrompt("for " + self.statement.varName + "}")
+					that.rebuild.getLine({
+						history: that.lineHistory,
+						prompt: that.setPrompt("for " + that.statement.varName + "}")
 					}).then(function(answer) {
 
-						self.processStep(answer);
+						that.processStep(answer);
 						resolve();
 					});
 
-				} else if (self.status === NonEditing) {
+				} else if (that.status === NonEditing) {
 
-					self.rebuild.getLine({
-						history: self.lineHistory,
-						prompt: self.setPrompt("for end}")
+					that.rebuild.getLine({
+						history: that.lineHistory,
+						prompt: that.setPrompt("for end}")
 					}).then(function(answer) {
 
-						self.processStep(answer);
-						self.markDead();
+						that.processElseStatement(answer);
+						that.markDead();
 						resolve();
 
 

@@ -62,6 +62,15 @@ class UnProcessedSentence extends Sentence {
 
 }
 
+class LineComment extends Sentence {
+
+	constructor(message) {
+		super();
+		this.message = message;
+	}
+
+}
+
 
 
 class errorStatement extends Statement {
@@ -75,9 +84,8 @@ class errorStatement extends Statement {
 		});
 	}
 
-
-
 }
+
 
 
 class executableStatement extends Statement {
@@ -359,6 +367,7 @@ ast.forStatement = forStatement;
 ast.UnProcessedSentence = UnProcessedSentence;
 ast.CustomCommand = CustomCommand;
 ast.Command = Command;
+ast.LineComment = LineComment;
 ast.Statement = Statement;
 ast.executableStatement = executableStatement;
 

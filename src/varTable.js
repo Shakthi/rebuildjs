@@ -15,7 +15,7 @@ class VarTable {
 		}
 
 		if (this.superEntry)
-			return this.superEntry.get(key);
+			return this.superEntry.getEntry(key);
 
 		return null;
 	}

@@ -24,6 +24,7 @@ const grammar = {
 
         },
         "rules": [
+            ["^[ ]*\\#.*", "yytext = 'asdasd';  return 'COMMENT';"],
             ["^[ ]*\\.{letter}+", "var yytexTrimmed = yytext.trim(); yytext=yytexTrimmed.substring(1);  return 'COMMAND';"],
             ["{letter}+", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
             ['"(\\ .|[^"])*"', 'yytext=yytext.substring(1,yytext.length-1); return "STRING_LITERAL";'],
@@ -78,7 +79,9 @@ const grammar = {
             ["readStatement EOF", "$$=$1; return($$);"],
             ["end EOF", "$$= new yy.endStatement(); return($$);"],
             ["for identifier = e to e EOF", "$$= new yy.forStatement($2,$4,$6); return($$);"],
-            ["COMMAND", "$$ = new yy.CustomCommand($1); return($$); "],
+            ["COMMAND EOF", "$$ = new yy.CustomCommand($1); return($$); "],
+            ["COMMENT EOF", "$$ = new yy.LineComment($1); return($$); "],
+
 
 
         ],
