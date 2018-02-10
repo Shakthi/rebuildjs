@@ -7,16 +7,10 @@ const Enum = require('enum');
 const assert = require('assert');
 
 
-const Status = new Enum(['Idle', 'Edit', 'Run', 'LastRun', 'Dead']);
+const Status = new Enum(['Idle', 'Edit', 'Run', 'LastRun', 'Dead', 'Quit']);
 
 
 
-const AsyncRun = 'AsyncRun',
-	AsyncLastRun = 'AsyncLastRun',
-	Editing = 'Editing',
-	NonEditing = 'NonEditing',
-	Waiting = 'Waiting',
-	Quit = 'Quit';
 /* For step is complicated 
 There are two factor that contributing its complication
 1.It has loop
@@ -70,7 +64,7 @@ class forStepProcessor extends superClass {
 	}
 
 	onExit() {
-		if (this.status != Quit)
+		if (this.status != Status.Quit)
 			this.archiveStatement();
 		super.onExit();
 	}
@@ -85,7 +79,7 @@ class forStepProcessor extends superClass {
 		return this.evaluateExitConditionI();
 	}
 
-	__isForced() {
+	_isForced() {
 
 		return this.options.debug === 'stepin';
 	}
@@ -100,21 +94,21 @@ class forStepProcessor extends superClass {
 
 
 		if (this._isClosed() && this._isMature() && !this._isForced()) {
-			this.status = Status.Run;
+			this.status = Status.LastRun;
 		}
 
 
 
-		if (this._isClosed() && !this._isMature() && !this._isForced()) {
+		if (this._isClosed() && !this._isMature()) {
 			this.status = Status.Dead;
-
+			this.markDead();
 		}
 
 
 
-		if (!this._isClosed() || this._isForced()) {
+		if (!this._isClosed() || this._isForced() && this._isMature()) {
 
-			this.rewind();
+			this.history.rewind();
 			this.status = Status.Edit;
 		}
 
@@ -195,7 +189,7 @@ class forStepProcessor extends superClass {
 
 	processEndStatement() {
 
-		this.status = AsyncLastRun;
+		this.status = Status.LastRun;
 		this.stepContext.addToHistory = false;
 
 	}
@@ -215,7 +209,7 @@ class forStepProcessor extends superClass {
 			switch (command.name) {
 				case 'run':
 					this.lineHistory.historyIndex = 0; //TODO: not to access the variable
-					this.status = AsyncRun;
+					this.status = Status.Run;
 					this.initializeI();
 
 					break;
@@ -223,7 +217,7 @@ class forStepProcessor extends superClass {
 					this.stepContext.needToRewindHistory = true;
 					break;
 				case 'quit':
-					this.status = Quit;
+					this.status = Status.Quit;
 					this.markDead();
 					break;
 
@@ -274,7 +268,8 @@ class forStepProcessor extends superClass {
 
 			switch (this.status) {
 				case Status.Dead:
-					break; //Do nothing it will last step
+					resolve();
+					break;
 				case Status.Run:
 				case Status.LastRun:
 					const ret = runner(this.history.getContent()[this.lineHistory.historyIndex]);
@@ -286,6 +281,8 @@ class forStepProcessor extends superClass {
 
 						if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
 							this.incrementI();
+							this.lineHistory.historyIndex = 0;
+
 
 							if (!this._isMature()) {
 
@@ -300,6 +297,7 @@ class forStepProcessor extends superClass {
 							}
 						}
 					}
+					resolve();
 					break;
 
 				case Status.Edit:
@@ -313,9 +311,11 @@ class forStepProcessor extends superClass {
 						this.rebuild.getLine({
 							history: this.lineHistory,
 							prompt: this.setPrompt("for " + that.statement.varName + "}")
-						}).then(function(answer) {
+						}).then(answer => {
 
-							that.processStep(answer);
+							this.processStep(answer);
+							resolve();
+
 						});
 
 					} else {
@@ -323,19 +323,25 @@ class forStepProcessor extends superClass {
 						this.rebuild.getLine({
 							history: this.lineHistory,
 							prompt: this.setPrompt("for end}")
-						}).then(function(answer) {
+						}).then(answer => {
 
 							this.processElseStatement(answer);
 							this.markDead();
+							resolve();
 
 
 						});
 
 					}
+					break;
+
+
+				default:
+					assert(false, "should not come here");
+
 
 			}
 
-			resolve();
 		});
 
 
