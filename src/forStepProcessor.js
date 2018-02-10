@@ -58,7 +58,7 @@ class forStepProcessor extends superClass {
 
 	onEnter() {
 		super.onEnter();
-		this.history.init();
+		this.lineHistory.init();
 		this.initialize();
 	}
 
@@ -88,7 +88,7 @@ class forStepProcessor extends superClass {
 	initialize() {
 		this.unarchiveStatement();
 		this.initializeI();
-		this.history.historyIndex = 0;
+		this.lineHistory.historyIndex = 0;
 
 
 
@@ -107,7 +107,7 @@ class forStepProcessor extends superClass {
 
 		if (!this._isClosed() || this._isForced() && this._isMature()) {
 
-			this.history.rewind();
+			this.lineHistory.rewind();
 			this.status = Status.Edit;
 		}
 
@@ -121,7 +121,7 @@ class forStepProcessor extends superClass {
 
 
 		this.statement.subStatements = [];
-		this.history.getContent().forEach(function(statement) {
+		this.lineHistory.getContent().forEach(function(statement) {
 
 			if (statement instanceof ast.executableStatement || statement instanceof ast.LineComment) {
 				this.statement.subStatements.push(statement);
@@ -133,7 +133,7 @@ class forStepProcessor extends superClass {
 	unarchiveStatement() {
 
 		this.statement.subStatements.forEach(function(argument) {
-			this.history._internalAdd(argument);
+			this.lineHistory._internalAdd(argument);
 		}, this);
 	}
 
@@ -176,7 +176,7 @@ class forStepProcessor extends superClass {
 		}
 		while (this.evaluateExitConditionI()) {
 
-			this.history.getContent().forEach(runner, this);
+			this.lineHistory.getContent().forEach(runner, this);
 
 			//runner.call(this);
 			this.incrementI();
@@ -221,11 +221,11 @@ class forStepProcessor extends superClass {
 					break;
 
 				case 'checkback':
-					for (var i = this.history.getContent().length - 1; i >= 0; i--) {
-						if (this.history.getContent()[i] instanceof ast.executableStatement) {
+					for (var i = this.lineHistory.getContent().length - 1; i >= 0; i--) {
+						if (this.lineHistory.getContent()[i] instanceof ast.executableStatement) {
 							break;
 						} else {
-							this.history.popBack();
+							this.lineHistory.popBack();
 						}
 					}
 					this.stepContext.addToHistory = false;
@@ -271,7 +271,7 @@ class forStepProcessor extends superClass {
 					break;
 				case Status.Run:
 				case Status.LastRun:
-					const ret = runner(this.history.getContent()[this.lineHistory.historyIndex]);
+					const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
 					if (ret) {
 						this.status = Status.Edit;
 						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
@@ -309,7 +309,8 @@ class forStepProcessor extends superClass {
 
 						this.rebuild.getLine({
 							history: this.lineHistory,
-							prompt: this.setPrompt("for " + that.statement.varName + "}")
+							prompt: this.setPrompt("for " + that.statement.varName + "}"),
+							macros: this.macros
 						}).then(answer => {
 
 							this.processStep(answer);
@@ -356,14 +357,14 @@ class forStepProcessor extends superClass {
 
 		if (this.stepContext.needToRewindHistory) {
 
-			this.history.rewind();
+			this.lineHistory.rewind();
 		}
 
 	}
 
 	addToHistory(sentence) {
 
-		const writeContent = this.history.getContent()[this.history.getWriteHistoryIndex()];
+		const writeContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
 		var replace = false;
 		if (writeContent instanceof ast.UnProcessedSentence) {
 			replace = false;

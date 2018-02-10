@@ -11,7 +11,6 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 
 	stepProcessors.call(this, rebuild, history);
 	this.varTable = new VarTable();
-	this.history = history;
 	if (superVarTable) {
 		this.varTable.superEntry = superVarTable;
 	}
@@ -41,7 +40,7 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 		return null;
 
 	if (answer.historyEdited && !answer.bufferEdited)
-		return this.history.getLastEditedEntry().clone();
+		return this.lineHistory.getLastEditedEntry().clone();
 
 	var sentence = parser.parse(answer.line);
 	this.rebuild.console.info(sentence.toCode());
@@ -113,7 +112,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 			case "list":
 				{
 					let i = 0;
-					this.history.forEach(function(sentence, unused, j) {
+					this.lineHistory.forEach(function(sentence, unused, j) {
 
 						if (sentence instanceof ast.executableStatement)
 							this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
@@ -123,7 +122,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 			case "stepin":
 				{
 
-					const lastStatement = this.history.getLastEditedEntry();
+					const lastStatement = this.lineHistory.getLastEditedEntry();
 					if (lastStatement instanceof ast.executableStatement) {
 						this.stepInStatement(lastStatement);
 					}
@@ -133,7 +132,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 				{
 					let i = 0;
 
-					this.history.forEach(function(sentence, unused, j) {
+					this.lineHistory.forEach(function(sentence, unused, j) {
 						this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
 					}, this);
 				}
