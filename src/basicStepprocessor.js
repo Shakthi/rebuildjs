@@ -21,7 +21,18 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 BasicStepProcessor.prototype = Object.create(stepProcessors.prototype);
 
 BasicStepProcessor.prototype.processByMacros = function(answer) {
-	return answer;
+	if(!answer.key)
+		return answer;
+
+	var answer2 = answer;
+	switch(answer.key.name){
+		case 'l':
+			answer2.line = '.list';		
+		break;
+	}
+
+	return answer2;	
+	
 };
 
 BasicStepProcessor.prototype.processInput = function(answer) {
@@ -60,7 +71,8 @@ BasicStepProcessor.prototype.runStep = function() {
 
 		self.rebuild.getLine({
 			history: self.lineHistory,
-			prompt: self.setPrompt('rebuildx}')
+			prompt: self.setPrompt('rebuildx}'),
+			macros:self.getMacrosList()
 		}).then(function(answer) {
 
 			try {
@@ -151,7 +163,7 @@ BasicStepProcessor.prototype.stepInStatement = function(statement) {
 	this.processStatement(statement, {
 		debug: 'stepin'
 	});
-}
+};
 
 BasicStepProcessor.prototype.processStatement = function(statement, options) {
 	if (statement instanceof ast.printStatement) {

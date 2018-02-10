@@ -54,6 +54,12 @@ function historyPrevious() {
 }
 
 
+function historyPrevious() {
+
+	historyReplace(historyCompleter.edit('previous', self.line));
+}
+
+
 exports.getLine = function(options) {
 
 	historyEdited = false;
@@ -90,40 +96,57 @@ exports.getLine = function(options) {
 
 	historyCompleter.onEditBegin();
 
-    rl.write( historyCompleter.edit('none',"").result);
+	rl.write(historyCompleter.edit('none', "").result);
 
 	var ttyWriteOrig = rl._ttyWrite.bind(rl);
 
-	rl._ttyWrite = function(d, key) {
-
-		if (sessionRecorder) {
-			sessionRecorder.push({
-				data: d,
-				key: key
-			});
-		}
 
 
-		if (key.name == 'up') {
+	return new Promise(resolve => {
 
-			historyPrevious();
 
-		} else if (key.name == 'down') {
+		rl._ttyWrite = function(d, key) {
 
-			historyNext();
 
-		} else {
-			var oldline = this.line;
-			ttyWriteOrig(d, key);
-			if (oldline !== this.line) {
-				bufferEdited = true;
+			if (sessionRecorder) {
+				sessionRecorder.push({
+					data: d,
+					key: key
+				});
 			}
 
-		}
-	};
 
+			if (key.name == 'up') {
 
-	return new Promise(function(resolve) {
+				historyPrevious();
+
+			} else if (key.name == 'down') {
+
+				historyNext();
+
+			} else if (key.ctrl && options.macros && options.macros.includes(key.name)) {
+
+				historyCompleter.onEditEnd();
+				rl.close();
+				const result = {
+					line: "",
+					historyEdited,
+					bufferEdited,
+					key
+				};
+
+				resolve(result);
+
+			} else {
+				var oldline = this.line;
+				ttyWriteOrig(d, key);
+				if (oldline !== this.line) {
+					bufferEdited = true;
+				}
+
+			}
+		};
+
 
 		rl.on('line', (line) => {
 
