@@ -13,7 +13,7 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 	this.varTable = new VarTable();
 	this.history = history;
 	if (superVarTable) {
-		this.superEntry = superVarTable;
+		this.varTable.superEntry = superVarTable;
 	}
 
 }
