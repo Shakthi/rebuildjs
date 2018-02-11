@@ -47,6 +47,8 @@ class forStepProcessor extends superClass {
 		this.statement = statement;
 		this.status = Status.Idle;
 		this.options = options;
+		this.macros += "u";
+
 
 		if (!options) {
 			this.options = {};
@@ -161,6 +163,7 @@ class forStepProcessor extends superClass {
 	}
 
 
+
 	_runSynchronus() {
 
 		var beginvalue = this.statement.fromExpression.evaluate(this.varTable);
@@ -186,6 +189,27 @@ class forStepProcessor extends superClass {
 	}
 
 
+	processByMacros(answer) {
+		if (!answer.key)
+			return answer;
+
+		var answer2 = answer;
+		switch (answer.key.name) {
+			case 'u':
+				answer2.line = '.checkback';
+				this.stepContext.traceParsed = false;
+
+				break;
+
+			
+
+			default:
+				answer2 = super.processByMacros(answer2);
+		}
+
+		return answer2;
+
+	}
 	processEndStatement() {
 
 		this.status = Status.LastRun;

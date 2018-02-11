@@ -17,6 +17,13 @@ exports.info = function(argument) {
 
 };
 
+exports.write = function(argument) {
+	if (enabled) {
+		process.stdout.write(argument);
+	}
+
+};
+
 
 exports.setEnabled = function(argument) {
 	enabled = argument;

@@ -15,23 +15,40 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 		this.varTable.superEntry = superVarTable;
 	}
 
+	this.macros = "ls";
+
 }
 
 BasicStepProcessor.prototype = Object.create(stepProcessors.prototype);
 
 BasicStepProcessor.prototype.processByMacros = function(answer) {
-	if(!answer.key)
+	if (!answer.key)
 		return answer;
 
+	this.stepContext.addToHistory = false;
+	this.stepContext.traceParsed = false;
+	this.stepContext.macrosSubstituted = true;
+
+
 	var answer2 = answer;
-	switch(answer.key.name){
+	switch (answer.key.name) {
 		case 'l':
-			answer2.line = '.list';		
-		break;
+			answer2.line = '.list';
+			this.rebuild.console.write("\n");
+			break;
+		case 's':
+			answer2.line = '.stepin';
+			this.stepContext.traceParsed = false;
+			this.rebuild.console.write("\n");
+
+			this.stepContext.addToHistory = false;
+
+			break;
 	}
 
-	return answer2;	
-	
+
+	return answer2;
+
 };
 
 BasicStepProcessor.prototype.processInput = function(answer) {
@@ -39,11 +56,15 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 	if (answer.line === "")
 		return null;
 
-	if (answer.historyEdited && !answer.bufferEdited)
+	if (answer.historyEdited && !answer.bufferEdited && !this.stepContext.macrosSubstituted)
 		return this.lineHistory.getLastEditedEntry().clone();
 
 	var sentence = parser.parse(answer.line);
-	this.rebuild.console.info(sentence.toCode());
+
+	if (this.stepContext.traceParsed) {
+		this.rebuild.console.info(sentence.toCode());
+	}
+
 	return sentence;
 };
 
@@ -62,7 +83,8 @@ BasicStepProcessor.prototype.runStep = function() {
 
 	var self = this;
 	self.stepContext = {
-		addToHistory: true
+		addToHistory: true,
+		traceParsed: true
 	};
 
 
@@ -71,7 +93,7 @@ BasicStepProcessor.prototype.runStep = function() {
 		self.rebuild.getLine({
 			history: self.lineHistory,
 			prompt: self.setPrompt('rebuildx}'),
-			macros:self.getMacrosList()
+			macros: self.macros
 		}).then(function(answer) {
 
 			try {
@@ -125,6 +147,9 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 					const lastStatement = this.lineHistory.getLastEditedEntry();
 					if (lastStatement instanceof ast.executableStatement) {
 						this.stepInStatement(lastStatement);
+						this.stepContext.addToHistory = true;
+						this.updateHistory(lastStatement);
+						this.stepContext.addToHistory = false;
 					}
 				}
 				break;
