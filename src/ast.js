@@ -62,20 +62,6 @@ class UnProcessedSentence extends Sentence {
 
 }
 
-class LineComment extends Sentence {
-
-	constructor(message) {
-		super();
-		this.message = message;
-	}
-
-	toCode() {
-		var code = "#" + this.message;
-		return code;
-	}
-
-}
-
 
 
 class errorStatement extends Statement {
@@ -96,6 +82,37 @@ class errorStatement extends Statement {
 class executableStatement extends Statement {
 
 
+
+}
+
+
+
+class LineComment extends executableStatement {
+
+	constructor(message) {
+		super();
+		this.message = message;
+	}
+
+	toCode() {
+		var code = "#" + this.message;
+		return code;
+	}
+
+}
+
+
+class DebuggerTrap extends executableStatement {
+
+	constructor(message) {
+		super();
+		this.message = message;
+	}
+
+	toCode() {
+		var code = "#" + this.message;
+		return code;
+	}
 
 }
 
@@ -373,7 +390,9 @@ ast.UnProcessedSentence = UnProcessedSentence;
 ast.CustomCommand = CustomCommand;
 ast.Command = Command;
 ast.LineComment = LineComment;
+ast.DebuggerTrap = DebuggerTrap;
 ast.Statement = Statement;
+
 ast.executableStatement = executableStatement;
 
 

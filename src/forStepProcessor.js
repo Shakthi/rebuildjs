@@ -125,7 +125,7 @@ class forStepProcessor extends superClass {
 		this.statement.subStatements = [];
 		this.lineHistory.getContent().forEach(function(statement) {
 
-			if (statement instanceof ast.executableStatement || statement instanceof ast.LineComment) {
+			if (statement instanceof ast.executableStatement) {
 				this.statement.subStatements.push(statement);
 			}
 
@@ -220,7 +220,7 @@ class forStepProcessor extends superClass {
 
 	processElseStatement(answer) {
 
-		this.processSentence(new ast.LineComment(answer.line));
+		this.processSentence(new ast.DebuggerTrap(answer.line));
 	}
 
 
@@ -276,8 +276,9 @@ class forStepProcessor extends superClass {
 
 		function runner(statement) {
 
-			if (statement instanceof ast.LineComment) {
-				return 10;
+			if (statement instanceof ast.DebuggerTrap) {
+				{debuggerTrap:true}
+				return;
 			}
 
 			if (statement instanceof ast.executableStatement) {
@@ -296,7 +297,7 @@ class forStepProcessor extends superClass {
 				case Status.Run:
 				case Status.LastRun:
 					const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-					if (ret) {
+					if (ret && ret.debuggerTrap) {
 						this.status = Status.Edit;
 						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 					} else {
