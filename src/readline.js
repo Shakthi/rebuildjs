@@ -95,8 +95,8 @@ exports.getLine = function(options) {
 	self = rl;
 
 	historyCompleter.onEditBegin();
-
-	rl.write(historyCompleter.edit('none', "").result);
+	const oldHistoryResult = historyCompleter.edit('none', "");;
+	rl.write(oldHistoryResult.result);
 
 	var ttyWriteOrig = rl._ttyWrite.bind(rl);
 
@@ -132,7 +132,8 @@ exports.getLine = function(options) {
 					line: "",
 					historyEdited,
 					bufferEdited,
-					key
+					key,
+					prefilled: oldHistoryResult.result !== ''
 				};
 
 				resolve(result);
@@ -155,7 +156,8 @@ exports.getLine = function(options) {
 			const result = {
 				line,
 				historyEdited,
-				bufferEdited
+				bufferEdited,
+				prefilled: oldHistoryResult.result !== ''
 			};
 			//console.log("//historyReplace:", result);
 

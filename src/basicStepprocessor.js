@@ -56,7 +56,7 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 	if (answer.line === "")
 		return null;
 
-	if (answer.historyEdited && !answer.bufferEdited && !this.stepContext.macrosSubstituted)
+	if ((answer.historyEdited || answer.prefilled) && !answer.bufferEdited && !this.stepContext.macrosSubstituted)
 		return this.lineHistory.getLastEditedEntry().clone();
 
 	var sentence = parser.parse(answer.line);

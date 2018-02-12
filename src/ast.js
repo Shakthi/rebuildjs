@@ -69,6 +69,11 @@ class LineComment extends Sentence {
 		this.message = message;
 	}
 
+	toCode() {
+		var code = "#" + this.message;
+		return code;
+	}
+
 }
 
 

@@ -100,14 +100,14 @@ class forStepProcessor extends superClass {
 
 
 
-		if (this._isClosed() && !this._isMature()) {
+		if (this._isClosed() && !this._isMature() && !this._isForced() ) {
 			this.status = Status.Dead;
 			this.markDead();
 		}
 
 
 
-		if (!this._isClosed() || this._isForced() && this._isMature()) {
+		if (!this._isClosed() || this._isForced() ) {
 
 			this.lineHistory.rewind();
 			this.status = Status.Edit;
@@ -220,7 +220,7 @@ class forStepProcessor extends superClass {
 
 	processElseStatement(answer) {
 
-		this.processSentence(new ast.LineComment('#' + answer.line));
+		this.processSentence(new ast.LineComment(answer.line));
 	}
 
 
