@@ -24,7 +24,7 @@ const grammar = {
 
         },
         "rules": [
-            ["^[ ]*\\#.*", "yytext = 'asdasd';  return 'COMMENT';"],
+            ["^[ ]*\\#.*", " var array = yytext.split('#'); array.shift(); yytext= array.join('');   return 'COMMENT';"],
             ["^[ ]*\\.{letter}+", "var yytexTrimmed = yytext.trim(); yytext=yytexTrimmed.substring(1);  return 'COMMAND';"],
             ["{letter}+", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
             ['"(\\ .|[^"])*"', 'yytext=yytext.substring(1,yytext.length-1); return "STRING_LITERAL";'],

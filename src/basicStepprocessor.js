@@ -210,6 +210,10 @@ BasicStepProcessor.prototype.processStatement = function(statement, options) {
 	} else if (statement instanceof ast.errorStatement) {
 
 		this.rebuild.console.log("! " + statement.message);
+	} else if (statement instanceof ast.LineComment) {
+
+		this.rebuild.console.info(  statement.message);
+
 	} else {
 
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
