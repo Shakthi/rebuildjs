@@ -104,17 +104,21 @@ class LineComment extends executableStatement {
 
 class DebuggerTrap extends executableStatement {
 
-	constructor(message) {
+	constructor(message, oldSentence) {
 		super();
-		this.message = message;
+		Object.assign(this, {
+			message,
+			oldSentence,
+		});
 	}
 
 	toCode() {
-		var code = "#" + this.message;
+		var code = this.oldSentence ? this.oldSentence.toCode() : "";
 		return code;
 	}
 
 }
+
 
 
 

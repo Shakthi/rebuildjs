@@ -15,7 +15,7 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 		this.varTable.superEntry = superVarTable;
 	}
 
-	this.macros = "ls";
+	this.macros = "lsc";
 
 }
 
@@ -34,6 +34,10 @@ BasicStepProcessor.prototype.processByMacros = function(answer) {
 	switch (answer.key.name) {
 		case 'l':
 			answer2.line = '.list';
+			this.rebuild.console.write("\n");
+			break;
+		case 'c':
+			answer2.line = '.quit';
 			this.rebuild.console.write("\n");
 			break;
 		case 's':
@@ -163,6 +167,11 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 				}
 				break;
 
+			case 'quit':
+				this.markDead();
+				break;
+
+
 
 			default:
 				throw ("Unknown command");
@@ -212,7 +221,11 @@ BasicStepProcessor.prototype.processStatement = function(statement, options) {
 		this.rebuild.console.log("! " + statement.message);
 	} else if (statement instanceof ast.LineComment) {
 
-		this.rebuild.console.info(  statement.message);
+		this.rebuild.console.info(statement.message);
+
+	} else if (statement instanceof ast.DebuggerTrap) {
+
+		this.rebuild.console.info(statement.message);
 
 	} else {
 
@@ -248,6 +261,12 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 		}
 
 	} else if (sentence instanceof ast.Statement) {
+		if (sentence instanceof ast.DebuggerTrap) {
+			if (sentence.oldSentence) {
+				sentence = sentence.oldSentence;
+			}
+		}
+
 		this.processStatement(sentence);
 	} else if (sentence instanceof ast.LineComment) {
 		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));

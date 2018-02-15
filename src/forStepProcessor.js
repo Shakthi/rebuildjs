@@ -100,14 +100,14 @@ class forStepProcessor extends superClass {
 
 
 
-		if (this._isClosed() && !this._isMature() && !this._isForced() ) {
+		if (this._isClosed() && !this._isMature() && !this._isForced()) {
 			this.status = Status.Dead;
 			this.markDead();
 		}
 
 
 
-		if (!this._isClosed() || this._isForced() ) {
+		if (!this._isClosed() || this._isForced()) {
 
 			this.lineHistory.rewind();
 			this.status = Status.Edit;
@@ -201,7 +201,7 @@ class forStepProcessor extends superClass {
 
 				break;
 
-			
+
 
 			default:
 				answer2 = super.processByMacros(answer2);
@@ -219,8 +219,10 @@ class forStepProcessor extends superClass {
 
 
 	processElseStatement(answer) {
-
-		this.processSentence(new ast.DebuggerTrap(answer.line));
+		var originalContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
+		if(originalContent  instanceof ast.UnProcessedSentence)
+			originalContent = null;
+		this.updateHistory(new ast.DebuggerTrap(answer.line,originalContent));
 	}
 
 
@@ -277,8 +279,11 @@ class forStepProcessor extends superClass {
 		function runner(statement) {
 
 			if (statement instanceof ast.DebuggerTrap) {
-				{debuggerTrap:true}
-				return;
+				that.rebuild.console.log("!!Trapped - " + statement.message);
+				return {
+					debuggerTrap: true
+				};
+
 			}
 
 			if (statement instanceof ast.executableStatement) {
@@ -347,7 +352,7 @@ class forStepProcessor extends superClass {
 
 						this.rebuild.getLine({
 							history: this.lineHistory,
-							prompt: this.setPrompt("for end}")
+							prompt: this.setPrompt("for end}#")
 						}).then(answer => {
 
 							this.processElseStatement(answer);
