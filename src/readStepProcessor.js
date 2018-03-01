@@ -16,7 +16,7 @@ readStepProcessor.prototype.runStep = function() {
 
 	if (!this.prompt) {
 		this.prompt = "input ";
-		
+
 		for (var i = 0; i < this.statement.elements.length; i++) {
 			this.prompt += ("'" + this.statement.elements[i] + "'");
 			if (i != this.statement.elements.length - 1) {
@@ -34,36 +34,43 @@ readStepProcessor.prototype.runStep = function() {
 
 		self.rebuild.getLine({
 			history: self.lineHistory,
-			prompt: self.setPrompt(self.prompt)
+			prompt: self.setPrompt(self.prompt),
+			macros: "c"
+
 		}).then(function(answer) {
 
-			if (answer != "") {
-
-				var inputval = eval(answer);
-
-				if (Array.isArray(inputval)) {
-
-					for (var i = 0; i < self.statement.elements.length; i++) {
-
-						if (i >= inputval.length)
-							break;
-						self.varTable.setEntry(self.statement.elements[i], inputval[i]);
-
-					}
-
-				} else {
-					self.varTable.setEntry(self.statement.elements[0], inputval);
-				}
-
-				self.markDead();
-
-
+			if (answer.key && answer.key.name == "c" && answer.key.ctrl) {
+				self.markDead(superClass.DeathReason.abort);
 
 			} else {
 
-				self.markDead();;
+				if (answer.line !== "") {
+
+					var inputval = eval(answer.line);
+
+					if (Array.isArray(inputval)) {
+
+						for (var i = 0; i < self.statement.elements.length; i++) {
+
+							if (i >= inputval.length)
+								break;
+							self.varTable.setEntry(self.statement.elements[i], inputval[i]);
+
+						}
+
+					} else {
+						self.varTable.setEntry(self.statement.elements[0], inputval);
+					}
+
+					self.markDead();
+
+
+
+				}
 
 			}
+
+
 
 			resolve();
 

@@ -1,5 +1,7 @@
 'use strict';
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
+const stepProcessors = require('./stepprocessor.js').stepProcessor;
+
 const ast = require('./ast.js');
 
 const StackedSentenceHistory = require('./StackedSentenceHistory.js');
@@ -220,9 +222,9 @@ class forStepProcessor extends superClass {
 
 	processElseStatement(answer) {
 		var originalContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
-		if(originalContent  instanceof ast.UnProcessedSentence)
+		if (originalContent instanceof ast.UnProcessedSentence)
 			originalContent = null;
-		this.updateHistory(new ast.DebuggerTrap(answer.line,originalContent));
+		this.updateHistory(new ast.DebuggerTrap(answer.line, originalContent));
 	}
 
 
@@ -243,7 +245,7 @@ class forStepProcessor extends superClass {
 					break;
 				case 'quit':
 					this.status = Status.Quit;
-					this.markDead();
+					this.markDead(stepProcessors.DeathReason.abort);
 					break;
 
 				case 'checkback':
@@ -270,11 +272,15 @@ class forStepProcessor extends superClass {
 
 
 
-	runStep() {
+	runStep(argument) {
 
 		var that = this;
 
-
+		if (argument == stepProcessors.DeathReason.abort) {
+			this.status = Status.Edit;
+			this.lineHistory.historyIndex--;
+			this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+		}
 
 		function runner(statement) {
 
@@ -301,6 +307,8 @@ class forStepProcessor extends superClass {
 					break;
 				case Status.Run:
 				case Status.LastRun:
+
+
 					const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
 					if (ret && ret.debuggerTrap) {
 						this.status = Status.Edit;
@@ -326,7 +334,9 @@ class forStepProcessor extends superClass {
 							}
 						}
 					}
+
 					resolve();
+
 					break;
 
 				case Status.Edit:
@@ -352,7 +362,9 @@ class forStepProcessor extends superClass {
 
 						this.rebuild.getLine({
 							history: this.lineHistory,
-							prompt: this.setPrompt("for end}#")
+							prompt: this.setPrompt("for end}#"),
+							macros: "c"
+
 						}).then(answer => {
 
 							this.processElseStatement(answer);

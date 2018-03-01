@@ -11,11 +11,11 @@ function main(args) {
 	rebuild.selfTest().then(function() {
 
 
-		function runloop() {
+		function runloop(argument) {
 
-			rebuild.runStep().then(function() {
+			rebuild.runStep(argument).then(function(result) {
 
-				runloop();
+				runloop(result);
 
 			}).catch(function(reason) {
 

@@ -37,7 +37,7 @@ rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
 rebuild.isAlive = true;
 
-rebuild.runStep = function() {
+rebuild.runStep = function(argument) {
 
 
 	return new Promise(function(resolve, reject) {
@@ -51,20 +51,27 @@ rebuild.runStep = function() {
 
 		if (processorStack.length === 0) {
 			reject("empty processor");
+			return;
 		}
 
-		processorStack.last().runStep().then(function() {
+		processorStack.last().runStep(argument).then(function() {
+
+			var deathNote = null;
 
 			if (processorStack.last().isDead) {
+				deathNote = processorStack.last().deathReason;
 
 				rebuild.exitProcessing();
 
 			}
 
-			if (!rebuild.isAlive)
+			if (!rebuild.isAlive){
 				reject("request termination");
-			else
-				resolve("next step");
+			}
+			else{
+
+				resolve(deathNote);
+			}
 
 
 		}).catch(function(reason) {
@@ -96,9 +103,9 @@ rebuild.SetHistoryEnabled = function(value) {
 	isHistoryEnabled = value;
 };
 
-rebuild.addHistoryEntry = function(entry,options) {
+rebuild.addHistoryEntry = function(entry, options) {
 	if (isHistoryEnabled)
-		historyStack.top().add(entry,options);
+		historyStack.top().add(entry, options);
 };
 
 

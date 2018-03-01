@@ -168,7 +168,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 				break;
 
 			case 'quit':
-				this.markDead();
+				this.markDead(stepProcessors.DeathReason.abort);
 				break;
 
 
@@ -186,7 +186,8 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 
 BasicStepProcessor.prototype.processEndStatement = function() {
 
-	this.isDead = true;
+	
+	this.markDead();
 	this.stepContext.addToHistory = false;
 
 };

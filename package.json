@@ -17,6 +17,7 @@
     "assert": "^1.4.1",
     "enum": "^2.5.0",
     "readline-ui": "^2.2.3"
+    "enum": "^2.5.0"
   },
   "devDependencies": {
     "browserify": "^14.4.0",
