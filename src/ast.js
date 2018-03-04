@@ -120,6 +120,16 @@ class DebuggerTrap extends executableStatement {
 }
 
 
+class ifStatement extends executableStatement {
+	constructor(condition){
+		super();
+		this.condition = condition;
+		this.subStatements = [];
+		this.negetiveSubStatements = [];
+
+	}
+
+}
 
 
 class forStatement extends executableStatement {
@@ -398,6 +408,7 @@ ast.DebuggerTrap = DebuggerTrap;
 ast.Statement = Statement;
 
 ast.executableStatement = executableStatement;
+ast.ifStatement = ifStatement;
 
 
 module.exports = ast;

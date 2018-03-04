@@ -43,6 +43,7 @@ const grammar = {
             ["\\)", "return ')'"],
             ["\\<", "return '<'"],
             ["\\>", "return '>'"],
+            ["==", "return '=='"],
             ["\\=", "return '='"],
 
             ["$", "return 'EOF'"],
@@ -79,6 +80,7 @@ const grammar = {
             ["readStatement EOF", "$$=$1; return($$);"],
             ["end EOF", "$$= new yy.endStatement(); return($$);"],
             ["for identifier = e to e EOF", "$$= new yy.forStatement($2,$4,$6); return($$);"],
+            ["if condition EOF", "$$= new yy.ifStatement($2); return($$);"],
             ["COMMAND EOF", "$$ = new yy.CustomCommand($1); return($$); "],
             ["COMMENT EOF", "$$ = new yy.LineComment($1); return($$); "],
 
@@ -121,6 +123,13 @@ const grammar = {
             ["NUMBER", "$$ = new  yy.terminalExpression(Number(yytext))"],
             ["identifier", "$$ = new  yy.getExpression(yytext)"],
 
+        ],
+
+        "condition":[
+            [" e == e","$$ =  new  yy.binaryExpression('==', $1,$3); "],
+            [" e != e","$$ =  new  yy.binaryExpression('!=', $1,$3); "],
+            [" e > e","$$ =  new  yy.binaryExpression('>', $1,$3); "],
+            [" e < e","$$ =  new  yy.binaryExpression('<', $1,$3); "]
         ],
 
 
