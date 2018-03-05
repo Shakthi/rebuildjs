@@ -16,6 +16,10 @@ const factory = {
 
 			return new forModule.forStepProcessor(rebuild, sentence, varTable,options);
 
+		} else if (sentence instanceof ast.ifStatement) {
+
+			return new forModule.forStepProcessor(rebuild, sentence, varTable,options);
+
 		}
 
 		return null;

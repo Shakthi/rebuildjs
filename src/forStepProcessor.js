@@ -71,7 +71,7 @@ class forStepProcessor extends superClass {
 			this.archiveStatement();
 		super.onExit();
 	}
-
+	
 	_isClosed() {
 
 		return this.statement.subStatements.length > 0;
