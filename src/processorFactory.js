@@ -18,7 +18,7 @@ const factory = {
 
 		} else if (sentence instanceof ast.ifStatement) {
 
-			return new forModule.forStepProcessor(rebuild, sentence, varTable,options);
+			return new forModule.ifProcessor(rebuild, sentence, varTable,options);
 
 		}
 
