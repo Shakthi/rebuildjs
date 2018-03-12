@@ -1,3 +1,4 @@
+
 "use strict";
 
 const stepProcessors = require('./stepprocessor.js');
@@ -62,7 +63,10 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 		return null;
 
 	if ((answer.historyEdited || answer.prefilled) && !answer.bufferEdited && !this.stepContext.macrosSubstituted)
+	{
+		this.stepContext.reusedSentence = true;
 		return this.lineHistory.getLastEditedEntry().clone();
+	}	
 
 	var sentence = parser.parse(answer.line);
 
@@ -230,7 +234,7 @@ BasicStepProcessor.prototype.processStatement = function(statement, options) {
 		this.rebuild.console.info(statement.message);
 
 	} else {
-
+		options.reloaded = this.stepContext.reusedSentence;	
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
 		if (processor) {
 
@@ -269,7 +273,7 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 			}
 		}
 
-		this.processStatement(sentence);
+		this.processStatement(sentence,{});
 	} else if (sentence instanceof ast.LineComment) {
 		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	} else {

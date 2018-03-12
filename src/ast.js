@@ -122,12 +122,23 @@ class DebuggerTrap extends executableStatement {
 
 
 class ifStatement extends executableStatement {
-	constructor(condition){
+	constructor(condition) {
 		super();
 		this.condition = condition;
 		this.subStatements = [];
 		this.negetiveSubStatements = [];
 
+	}
+
+
+	toCode() {
+		var code = "if " + this.condition.toCode(); 
+		if (this.subStatements && this.subStatements.length) {
+			code += ":";
+		}else if (this.negetiveSubStatements && this.negetiveSubStatements.length){
+			code += ";";
+		}
+		return code;
 	}
 
 }
@@ -253,6 +264,19 @@ class expression extends Serializable {
 				return this.left.evaluate(context) * this.right.evaluate(context);
 			case '/':
 				return this.left.evaluate(context) / this.right.evaluate(context);
+			case '==':
+				return this.left.evaluate(context) == this.right.evaluate(context);
+			case '!=':
+				return this.left.evaluate(context) != this.right.evaluate(context);
+			case '<':
+				return this.left.evaluate(context) < this.right.evaluate(context);
+			case '>':
+				return this.left.evaluate(context) > this.right.evaluate(context);
+			case '<=':
+				return this.left.evaluate(context) <= this.right.evaluate(context);
+			case '>=':
+				return this.left.evaluate(context) >= this.right.evaluate(context);
+
 			case 'UMINUS':
 				return -this.argument.evaluate(context);
 			case 'GROUP':
@@ -365,13 +389,13 @@ class getExpression extends expression {
 
 
 
-ast.createSentence = function(name) {
+ast.createSentence = function (name) {
 
 	return Object.create(ast[name].prototype);
 };
 
 
-ast.createSentenceFromJson = function(json) {
+ast.createSentenceFromJson = function (json) {
 
 	const object = ast.createSentence(json.constructorName);
 	object.fromJson(json.content);
@@ -379,7 +403,7 @@ ast.createSentenceFromJson = function(json) {
 	return object;
 };
 
-ast.sentenceToJson = function(sentence) {
+ast.sentenceToJson = function (sentence) {
 
 	var data = {
 		constructorName: sentence.constructor.name,
