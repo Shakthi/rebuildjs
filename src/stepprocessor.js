@@ -14,12 +14,12 @@ var stepProcessor = function(rebuild, history) {
 		this.lineHistory = new lineHistory();
 
 	this.isDead = false;
-	this.deathReason = stepProcessor.DeathReason.unknown;
+	this.deathReason = DeathReason.unknown;
 
 };
 
 
-stepProcessor.DeathReason = new Enum(['unknown', 'normal', 'abort']);
+var DeathReason = new Enum(['unknown', 'normal', 'abort']);
 
 stepProcessor.prototype.onEnter = function() {
 
@@ -42,7 +42,7 @@ stepProcessor.prototype.setPrompt = function(aprompt) {
 };
 
 
-stepProcessor.prototype.markDead = function(deathReason = stepProcessor.DeathReason.normal) {
+stepProcessor.prototype.markDead = function(deathReason = DeathReason.normal) {
 	this.isDead = true;
 	this.deathReason = deathReason;
 
@@ -100,3 +100,4 @@ echoProcessor.prototype.runStep = function() {
 
 exports.echoProcessor = echoProcessor;
 exports.stepProcessor = stepProcessor;
+exports.DeathReason = DeathReason;

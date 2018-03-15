@@ -4,7 +4,9 @@
   "description": "Js version of c++ rebuild enviorment",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp browserify",
+    "watch": "webpack-cli --watch"
   },
   "keywords": [
     "rebuild",
@@ -16,17 +18,29 @@
   "dependencies": {
     "assert": "^1.4.1",
     "enum": "^2.5.0",
-    "readline-ui": "^2.2.3"
+    "gulp-util": "^3.0.8",
+    "readline-ui": "^2.2.3",
+    "simple-serial-js": "0.0.5",
+    "tern": "^0.21.0",
+    "ts-node": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.40",
     "@babel/node": "^7.0.0-beta.40",
     "@babel/preset-typescript": "^7.0.0-beta.40",
+    "@types/es6-promise": "^3.3.0",
     "@types/node": "^9.4.7",
     "babel-plugin-transform-typescript": "^7.0.0-alpha.19",
     "babel-preset-env": "^1.6.1",
-    "browserify": "^14.4.0",
+    "browserify": "^14.5.0",
+    "gulp": "^3.9.1",
     "jison": "^0.4.18",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "tsify": "^3.0.4",
+    "typescript": "^2.7.2",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.0",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.11"
   }
 }

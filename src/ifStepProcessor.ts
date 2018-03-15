@@ -1,31 +1,34 @@
-import {BasicStepProcessor as superClass} from './basicStepprocessor.js';
-const ast = require('./ast.js');
-const stepProcessors = require('./stepprocessor.js').stepProcessor;
-const StackedSentenceHistory = require('./StackedSentenceHistory.js');
-const Enum = require('enum');
-const assert = require('assert');
+import basicStepprocessor = require('./basicStepprocessor.js');
+import Ast = require('./ast.js');
+import stepProcessors = require('./stepprocessor.js');
+import StackedSentenceHistory = require('./StackedSentenceHistory.js');
+enum Status {
+	Idle, Edit, Run, LastRun, Dead, Quit
+};
+
+import assert = require('assert');
 
 
-const Status = new Enum(['Idle', 'Edit', 'Run', 'LastRun', 'Dead', 'Quit']);
-const Mode = new Enum(['If', 'Else', 'Undecided']);
+enum Mode  { If, Else, Undecided };
 
-class ifStepProcessor extends superClass {
+class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
+	mode:Mode;
+	status:Status;
 
-	constructor(rebuild, statement, superVarTable, options) {
+	constructor(rebuild: any, private statement: Ast.ifStatement,
+		superVarTable: any, 
+		private options:any) {
 
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
-		this.statement = statement;
-		//this.status = Status.Idle;
-		this.options = options;
+		
 		this.macros += "u";
 		this.mode = Mode.Undecided;
 		this.status = Status.Edit;
 
-
-		if (!options) {
-			this.options = {};
-		}
-
+		if (!this.options) {
+            this.options = {};
+        }
+		
 
 	}
 
@@ -52,17 +55,16 @@ class ifStepProcessor extends superClass {
 	}
 
 	initialize() {
- 		this.mode = this.evaluateCondition() ? Mode.If : Mode.Else;
+		this.mode = this.evaluateCondition() ? Mode.If : Mode.Else;
 		this.unarchiveStatement(this.mode == Mode.If);//Evaluate
-		if ( !this._isForced()) {
+		if (!this._isForced()) {
 			this.status = Status.LastRun;
-		}else{
+		} else {
 			this.lineHistory.rewind();
 			this.status = Status.Edit;
 		}
 
 
-		assert(this.status != Status.Idle);
 		this.lineHistory.historyIndex = 0;
 	}
 
@@ -70,38 +72,38 @@ class ifStepProcessor extends superClass {
 
 
 		this.statement.subStatements = [];
-		this.lineHistory.getContent().forEach(function (statement) {
+		this.lineHistory.getContent().forEach((statement:Ast.Sentence) => {
 
-			if (statement instanceof ast.executableStatement) {
+			if (statement instanceof Ast.executableStatement) {
 				this.statement.subStatements.push(statement);
 			}
 
-		}, this);
+		});
 	}
 
-	unarchiveStatement(isTrue) {
+	unarchiveStatement(isTrue:boolean) {
 		if (isTrue) {
-			if(this.statement.subStatements.lenght){
-				this.statement.subStatements.forEach(function (argument) {
+			if (this.statement.subStatements.length) {
+				this.statement.subStatements.forEach( (argument:Ast.Sentence)=> {
 					this.lineHistory._internalAdd(argument);
-				}, this);
-				
-			}else{
+				});
 
-					this.statement.subStatements.forEach(function (argument) {
-				this.lineHistory._internalAdd(argument);
-			}, this);
-			
+			} else {
+
+				this.statement.subStatements.forEach( (argument:Ast.Sentence)=> {
+					this.lineHistory._internalAdd(argument);
+				});
+
 			}
-			
+
 
 		} else {
-			this.statement.negetiveSubStatements.forEach(function (argument) {
+			this.statement.negetiveSubStatements.forEach((argument:Ast.Sentence)=> {
 				this.lineHistory._internalAdd(argument);
-			}, this);
+			});
 
 		}
-		
+
 
 	}
 
@@ -110,15 +112,15 @@ class ifStepProcessor extends superClass {
 		return this.mode == Mode.If;
 	}
 
-	processElseStatement(answer) {
+	processElseStatement(answer:basicStepprocessor.answer) {
 		this.processStep(answer);
 	}
 
 
-	
 
+ 
 
-	runStep(argument) {
+	runStep(argument:any) {
 
 		var that = this;
 
@@ -128,30 +130,31 @@ class ifStepProcessor extends superClass {
 			this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 		}
 
-		function runner(statement) {
+		function runner(statement:Ast.Statement) {
 
-			if (statement instanceof ast.DebuggerTrap) {
-				that.rebuild.console.log("!!Trapped - " + statement.message);
+			if (statement instanceof Ast.DebuggerTrap) {
+				const debuggerTrapStatment = statement as Ast.DebuggerTrap;
+				that.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
 				return {
 					debuggerTrap: true
 				};
 
 			}
-			
-			if (statement instanceof ast.UnProcessedSentence) {
+
+			if (statement instanceof Ast.UnProcessedSentence) {
 				that.rebuild.console.log("!!Edit please ");
 				return {
 					debuggerTrap: true
 				};
 			}
 
-			if (statement instanceof ast.executableStatement) {
+			if (statement instanceof Ast.executableStatement) {
 				that.processStatement(statement);
 			}
 
 		}
 
-		return new Promise(resolve => {
+		return new Promise<void>((resolve:any) => {
 
 
 			switch (this.status) {
@@ -197,7 +200,7 @@ class ifStepProcessor extends superClass {
 							history: this.lineHistory,
 							prompt: this.setPrompt("if }"),
 							macros: this.macros
-						}).then(answer => {
+						}).then((answer: basicStepprocessor.answer)=> {
 
 							this.processStep(answer);
 							resolve();
@@ -211,7 +214,7 @@ class ifStepProcessor extends superClass {
 							prompt: this.setPrompt("else }"),
 							macros: this.macros
 
-						}).then(answer => {
+						}).then((answer:basicStepprocessor.answer) => {
 
 							this.processElseStatement(answer);
 							resolve();
@@ -236,7 +239,7 @@ class ifStepProcessor extends superClass {
 	}
 
 
-	updateHistory(sentence) {
+	updateHistory(sentence:Ast.Sentence) {
 
 		if (this.stepContext.addToHistory) {
 			this.addToHistory(sentence);
@@ -249,11 +252,11 @@ class ifStepProcessor extends superClass {
 
 	}
 
-	addToHistory(sentence) {
+	addToHistory(sentence:Ast.Sentence) {
 
 		const writeContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
 		var replace = false;
-		if (writeContent instanceof ast.UnProcessedSentence) {
+		if (writeContent instanceof Ast.UnProcessedSentence) {
 			replace = false;
 		} else {
 			replace = true;
@@ -261,8 +264,8 @@ class ifStepProcessor extends superClass {
 
 		this.rebuild.addHistoryEntry(sentence, {
 			replace: replace,
-			incrementer: (statement => statement instanceof ast.executableStatement ||
-				statement instanceof ast.UnProcessedSentence)
+			incrementer: (statement :Ast.Statement) => statement instanceof Ast.executableStatement ||
+				statement instanceof Ast.UnProcessedSentence
 		});
 
 

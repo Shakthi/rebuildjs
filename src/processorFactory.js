@@ -3,7 +3,7 @@ const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const ast = require("./ast.js");
 const readModule = require('./readStepProcessor.js');
 const forModule = require('./forStepProcessor.js');
-const ifModule = require('./ifStepProcessor.ts');
+const ifModule = require('./ifStepProcessor.js');
 
 const factory = {
 

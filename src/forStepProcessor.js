@@ -1,6 +1,7 @@
 'use strict';
 const superClass = require('./basicStepprocessor.js').BasicStepProcessor;
-const stepProcessors = require('./stepprocessor.js').stepProcessor;
+const stepProcessors = require('./stepprocessor.js');
+const stepProcessor = stepProcessors.stepProcessor;
 
 const ast = require('./ast.js');
 

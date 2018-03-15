@@ -65,7 +65,6 @@ exports.getLine = function(options) {
 	historyEdited = false;
 	bufferEdited = false;
 
-
 	var rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout

@@ -1,6 +1,7 @@
 "use strict";
 
-const Serializable = require('../../simple-serial-js/');
+const Serializable = require('simple-serial-js');
+const assert =  require('assert');
 
 const ast = {};
 class Sentence extends Serializable {
@@ -256,7 +257,8 @@ class expression extends Serializable {
 				return -this.argument.evaluate(context);
 			case 'GROUP':
 				return this.argument.evaluate(context);
-
+			default :
+			assert(false,'should not come here');
 		}
 
 

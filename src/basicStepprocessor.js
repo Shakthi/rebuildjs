@@ -1,6 +1,7 @@
 "use strict";
 
-const stepProcessors = require('./stepprocessor.js').stepProcessor;
+const stepProcessors = require('./stepprocessor.js');
+const stepProcessor = stepProcessors.stepProcessor;
 const parser = require('./parser.js').parser;
 const VarTable = require('./varTable.js');
 const ast = require("./ast.js");
@@ -9,7 +10,7 @@ const ast = require("./ast.js");
 
 function BasicStepProcessor(rebuild, history, superVarTable) {
 
-	stepProcessors.call(this, rebuild, history);
+	stepProcessor.call(this, rebuild, history);
 	this.varTable = new VarTable();
 	if (superVarTable) {
 		this.varTable.superEntry = superVarTable;
@@ -19,7 +20,7 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 
 }
 
-BasicStepProcessor.prototype = Object.create(stepProcessors.prototype);
+BasicStepProcessor.prototype = Object.create(stepProcessor.prototype);
 
 BasicStepProcessor.prototype.processByMacros = function(answer) {
 	if (!answer.key)
