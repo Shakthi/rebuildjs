@@ -152,6 +152,7 @@ class forStatement extends executableStatement {
 		this.fromExpression = fromExpression;
 		this.toExpression = toExpression;
 		this.subStatements = [];
+		this.negetiveSubStatements = [];
 
 	}
 

@@ -9,7 +9,7 @@ declare namespace astNameSpace {
 		constructor();
 
 		toCode(): string;
-		isEqual(aSentence: Sentence):boolean;
+		isEqual(aSentence: Sentence): boolean;
 
 		clone(): Sentence;
 	}
@@ -27,7 +27,7 @@ declare namespace astNameSpace {
 	class CustomCommand extends Command {
 
 		constructor(name: string);
-
+		name: string;
 	}
 
 
@@ -40,7 +40,7 @@ declare namespace astNameSpace {
 
 	class errorStatement extends Statement {
 
-		constructor(message :string, found:string, expected:string);
+		constructor(message: string, found: string, expected: string);
 
 	}
 
@@ -56,7 +56,7 @@ declare namespace astNameSpace {
 
 	class LineComment extends executableStatement {
 
-		constructor(message:string)
+		constructor(message: string)
 
 
 	}
@@ -64,23 +64,28 @@ declare namespace astNameSpace {
 
 	class DebuggerTrap extends executableStatement {
 
-		constructor(message:string, oldSentence:string);
-		message:string;
+		constructor(message: string, oldSentence: string);
+		message: string;
 
 	}
 
 
 	class ifStatement extends executableStatement {
-		constructor(condition:expression);
-		condition:expression;
-		subStatements:Sentence[];
-		negetiveSubStatements:Sentence[];
+		constructor(condition: expression);
+		condition: expression;
+		subStatements: Sentence[];
+		negetiveSubStatements: Sentence[];
 	}
 
 
 	class forStatement extends executableStatement {
 
-		constructor(varName:string, fromExpression:expression, toExpression:expression);
+		constructor(varName: string, fromExpression: expression, toExpression: expression);
+		subStatements: Sentence[];
+		negetiveSubStatements: Sentence[];
+		varName: string;
+		fromExpression: expression;
+		toExpression: expression;
 	}
 
 
@@ -99,25 +104,25 @@ declare namespace astNameSpace {
 
 	class readStatement extends executableStatement {
 
-		constructor(elements:string[], prompt:string);
+		constructor(elements: string[], prompt: string);
 	}
 
 
 	class letStatement extends executableStatement {
 
-		constructor(varName:string, anexpression:expression);
+		constructor(varName: string, anexpression: expression);
 
 	}
 
 
-	class expression  {
-		evaluate(context:any):any;
+	class expression {
+		evaluate(context: any): any;
 	}
 
 
 	class unaryExpression extends expression {
 
-		constructor(operator:string, left:expression);
+		constructor(operator: string, left: expression);
 
 	}
 
@@ -125,20 +130,20 @@ declare namespace astNameSpace {
 
 	class binaryExpression extends expression {
 
-		constructor(operator:string, left:expression, right:expression);
+		constructor(operator: string, left: expression, right: expression);
 
 	}
 
 
 	class terminalExpression extends expression {
 
-		constructor(terminalValue:any);
+		constructor(terminalValue: any);
 
 	}
 
 	class getExpression extends expression {
 
-		constructor(varName:string);
+		constructor(varName: string);
 
 	}
 }

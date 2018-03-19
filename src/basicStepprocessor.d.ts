@@ -32,7 +32,8 @@ declare namespace BasicStepProcessor {
 		processStatement(a: Ast.Statement): void;
 		rebuild: any;
 		setPrompt(a: string): void;
-		markDead(): void;
+		markDead(a?:any): void;
+		processCommand(a: Ast.Command): void;
 
 		stepContext: any;
 	}

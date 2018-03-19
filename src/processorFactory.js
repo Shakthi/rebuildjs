@@ -2,7 +2,8 @@
 const stepProcessors = require('./stepprocessor.js').stepProcessor;
 const ast = require("./ast.js");
 const readModule = require('./readStepProcessor.js');
-const forModule = require('./forStepProcessor.js');
+//const forModule = require('./forStepProcessor.js');
+const forModule = require('./forElseStepProcessor.js');
 const ifModule = require('./ifStepProcessor.js');
 
 const factory = {
@@ -14,7 +15,7 @@ const factory = {
 
 		} else if (sentence instanceof ast.forStatement) {
 
-			return new forModule.forStepProcessor(rebuild, sentence, varTable,options);
+			return new forModule.forElseStepProcessor(rebuild, sentence, varTable,options);
 
 		} else if (sentence instanceof ast.ifStatement) {
 
