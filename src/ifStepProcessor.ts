@@ -171,7 +171,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 					} else {
 						this.lineHistory.historyIndex++;
 
-						if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
+						if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex ) {
 							this.lineHistory.historyIndex--;
 
 							if (this.status == Status.LastRun) {
