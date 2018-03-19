@@ -64,10 +64,20 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
         this.lineHistory.historyIndex = 0;
     }
     archiveStatement() {
-        this.statement.subStatements = [];
+        if (this.mode == Mode.If) {
+            this.statement.subStatements = [];
+        }
+        else {
+            this.statement.negetiveSubStatements = [];
+        }
         this.lineHistory.getContent().forEach((statement) => {
             if (statement instanceof Ast.executableStatement) {
-                this.statement.subStatements.push(statement);
+                if (this.mode == Mode.If) {
+                    this.statement.subStatements.push(statement);
+                }
+                else {
+                    this.statement.negetiveSubStatements.push(statement);
+                }
             }
         });
     }
@@ -135,7 +145,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
                     }
                     else {
                         this.lineHistory.historyIndex++;
-                        if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex + 1) {
+                        if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex) {
                             this.lineHistory.historyIndex--;
                             if (this.status == Status.LastRun) {
                                 this.status = Status.Dead;

@@ -68,14 +68,23 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		this.lineHistory.historyIndex = 0;
 	}
 
-	archiveStatement() {
+	archiveStatement():void {
 
+		if (this.mode == Mode.If) {
+			this.statement.subStatements = [];
 
-		this.statement.subStatements = [];
+		} else {
+			this.statement.negetiveSubStatements = [];
+		}
 		this.lineHistory.getContent().forEach((statement:Ast.Sentence) => {
 
 			if (statement instanceof Ast.executableStatement) {
-				this.statement.subStatements.push(statement);
+				if (this.mode == Mode.If) {
+					this.statement.subStatements.push(statement);
+
+				}else{
+					this.statement.negetiveSubStatements.push(statement);
+				}
 			}
 
 		});

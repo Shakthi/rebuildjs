@@ -205,6 +205,10 @@ BasicStepProcessor.prototype.stepInStatement = function(statement) {
 };
 
 BasicStepProcessor.prototype.processStatement = function(statement, options) {
+	if (!options) {
+		options ={};
+	}
+
 	if (statement instanceof ast.printStatement) {
 		var output = "";
 

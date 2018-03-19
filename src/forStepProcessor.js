@@ -274,7 +274,9 @@ class forStepProcessor extends superClass {
 
 
 	runStep(argument) {
-
+		this.stepContext = {
+			
+		};
 		var that = this;
 
 		if (argument == stepProcessors.DeathReason.abort) {
