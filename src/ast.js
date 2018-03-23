@@ -65,6 +65,7 @@ class UnProcessedSentence extends Sentence {
 
 
 
+
 class errorStatement extends Statement {
 
 	constructor(message, found, expected) {
@@ -86,6 +87,9 @@ class executableStatement extends Statement {
 
 }
 
+class PassStatement extends executableStatement {
+
+}
 
 
 class LineComment extends executableStatement {
@@ -436,6 +440,7 @@ ast.Statement = Statement;
 
 ast.executableStatement = executableStatement;
 ast.ifStatement = ifStatement;
+ast.PassStatement = PassStatement;
 
 
 module.exports = ast;

@@ -55,12 +55,12 @@ declare namespace astNameSpace {
 
 
 	class LineComment extends executableStatement {
-
 		constructor(message: string)
-
-
 	}
 
+
+	class PassStatement extends executableStatement {
+	}
 
 	class DebuggerTrap extends executableStatement {
 

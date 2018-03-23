@@ -17,13 +17,13 @@ function BasicStepProcessor(rebuild, history, superVarTable) {
 		this.varTable.superEntry = superVarTable;
 	}
 
-	this.macros = "lsc";
+	this.macros = "lscd";
 
 }
 
 BasicStepProcessor.prototype = Object.create(stepProcessor.prototype);
 
-BasicStepProcessor.prototype.processByMacros = function(answer) {
+BasicStepProcessor.prototype.processByMacros = function (answer) {
 	if (!answer.key)
 		return answer;
 
@@ -48,6 +48,11 @@ BasicStepProcessor.prototype.processByMacros = function(answer) {
 			this.rebuild.console.write("\n");
 
 			this.stepContext.addToHistory = false;
+			break;
+		case 'd':
+			answer2.line = 'end';
+			this.rebuild.console.write("\n");
+			this.stepContext.addToHistory = false;
 
 			break;
 	}
@@ -57,16 +62,15 @@ BasicStepProcessor.prototype.processByMacros = function(answer) {
 
 };
 
-BasicStepProcessor.prototype.processInput = function(answer) {
+BasicStepProcessor.prototype.processInput = function (answer) {
 
 	if (answer.line === "")
 		return null;
 
-	if ((answer.historyEdited || answer.prefilled) && !answer.bufferEdited && !this.stepContext.macrosSubstituted)
-	{
+	if ((answer.historyEdited || answer.prefilled) && !answer.bufferEdited && !this.stepContext.macrosSubstituted) {
 		this.stepContext.reusedSentence = true;
 		return this.lineHistory.getLastEditedEntry().clone();
-	}	
+	}
 
 	var sentence = parser.parse(answer.line);
 
@@ -79,7 +83,7 @@ BasicStepProcessor.prototype.processInput = function(answer) {
 
 
 
-BasicStepProcessor.prototype.processStep = function(answer) {
+BasicStepProcessor.prototype.processStep = function (answer) {
 
 	answer = this.processByMacros(answer);
 	var sentence = this.processInput(answer);
@@ -88,7 +92,7 @@ BasicStepProcessor.prototype.processStep = function(answer) {
 
 
 
-BasicStepProcessor.prototype.runStep = function() {
+BasicStepProcessor.prototype.runStep = function () {
 
 	var self = this;
 	self.stepContext = {
@@ -97,13 +101,13 @@ BasicStepProcessor.prototype.runStep = function() {
 	};
 
 
-	return new Promise(function(resolve, reject) {
+	return new Promise(function (resolve, reject) {
 
 		self.rebuild.getLine({
 			history: self.lineHistory,
 			prompt: self.setPrompt('rebuildx}'),
 			macros: self.macros
-		}).then(function(answer) {
+		}).then(function (answer) {
 
 			try {
 
@@ -116,7 +120,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 			resolve();
 
-		}).catch(function(argument) {
+		}).catch(function (argument) {
 
 			reject(argument);
 		});
@@ -127,7 +131,7 @@ BasicStepProcessor.prototype.runStep = function() {
 
 };
 
-BasicStepProcessor.prototype.processCommand = function(command) {
+BasicStepProcessor.prototype.processCommand = function (command) {
 
 	function multiply(ch, n) {
 		var out = "";
@@ -143,7 +147,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 			case "list":
 				{
 					let i = 0;
-					this.lineHistory.forEach(function(sentence, unused, j) {
+					this.lineHistory.forEach(function (sentence, unused, j) {
 
 						if (sentence instanceof ast.executableStatement)
 							this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
@@ -166,7 +170,7 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 				{
 					let i = 0;
 
-					this.lineHistory.forEach(function(sentence, unused, j) {
+					this.lineHistory.forEach(function (sentence, unused, j) {
 						this.rebuild.console.log((i++) + ":" + multiply(' ', j) + sentence.toCode());
 					}, this);
 				}
@@ -189,24 +193,24 @@ BasicStepProcessor.prototype.processCommand = function(command) {
 
 };
 
-BasicStepProcessor.prototype.processEndStatement = function() {
+BasicStepProcessor.prototype.processEndStatement = function () {
 
-	
+
 	this.markDead();
 	this.stepContext.addToHistory = false;
 
 };
 
-BasicStepProcessor.prototype.stepInStatement = function(statement) {
+BasicStepProcessor.prototype.stepInStatement = function (statement) {
 
 	this.processStatement(statement, {
 		debug: 'stepin'
 	});
 };
 
-BasicStepProcessor.prototype.processStatement = function(statement, options) {
+BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	if (!options) {
-		options ={};
+		options = {};
 	}
 
 	if (statement instanceof ast.printStatement) {
@@ -236,9 +240,11 @@ BasicStepProcessor.prototype.processStatement = function(statement, options) {
 	} else if (statement instanceof ast.DebuggerTrap) {
 
 		this.rebuild.console.info(statement.message);
-
-	} else {
-		options.reloaded = this.stepContext.reusedSentence;	
+	}
+	else if (statement instanceof ast.PassStatement) {
+	}
+	else {
+		options.reloaded = this.stepContext.reusedSentence;
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
 		if (processor) {
 
@@ -253,7 +259,7 @@ BasicStepProcessor.prototype.processStatement = function(statement, options) {
 	}
 };
 
-BasicStepProcessor.prototype.processSentence = function(sentence) {
+BasicStepProcessor.prototype.processSentence = function (sentence) {
 
 	if (sentence === null) {
 		this.rebuild.isAlive = false;
@@ -277,7 +283,7 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 			}
 		}
 
-		this.processStatement(sentence,{});
+		this.processStatement(sentence, {});
 	} else if (sentence instanceof ast.LineComment) {
 		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	} else {
@@ -288,7 +294,7 @@ BasicStepProcessor.prototype.processSentence = function(sentence) {
 
 };
 
-BasicStepProcessor.prototype.updateHistory = function(sentence) {
+BasicStepProcessor.prototype.updateHistory = function (sentence) {
 
 	if (this.stepContext.addToHistory)
 		this.rebuild.addHistoryEntry(sentence);

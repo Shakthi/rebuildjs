@@ -9,9 +9,8 @@ var Status;
     Status[Status["Idle"] = 0] = "Idle";
     Status[Status["Edit"] = 1] = "Edit";
     Status[Status["Run"] = 2] = "Run";
-    Status[Status["LastRun"] = 3] = "LastRun";
-    Status[Status["Dead"] = 4] = "Dead";
-    Status[Status["Quit"] = 5] = "Quit";
+    Status[Status["Dead"] = 3] = "Dead";
+    Status[Status["Quit"] = 4] = "Quit";
 })(Status || (Status = {}));
 ;
 const assert = require("assert");
@@ -55,7 +54,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
         this.mode = this.evaluateCondition() ? Mode.If : Mode.Else;
         this.unarchiveStatement(this.mode == Mode.If); //Evaluate
         if (!this._isForced()) {
-            this.status = Status.LastRun;
+            this.status = Status.Run;
         }
         else {
             this.lineHistory.rewind();
@@ -83,16 +82,9 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
     }
     unarchiveStatement(isTrue) {
         if (isTrue) {
-            if (this.statement.subStatements.length) {
-                this.statement.subStatements.forEach((argument) => {
-                    this.lineHistory._internalAdd(argument);
-                });
-            }
-            else {
-                this.statement.subStatements.forEach((argument) => {
-                    this.lineHistory._internalAdd(argument);
-                });
-            }
+            this.statement.subStatements.forEach((argument) => {
+                this.lineHistory._internalAdd(argument);
+            });
         }
         else {
             this.statement.negetiveSubStatements.forEach((argument) => {
@@ -121,12 +113,6 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
                     debuggerTrap: true
                 };
             }
-            if (statement instanceof Ast.UnProcessedSentence) {
-                that.rebuild.console.log("!!Edit please ");
-                return {
-                    debuggerTrap: true
-                };
-            }
             if (statement instanceof Ast.executableStatement) {
                 that.processStatement(statement);
             }
@@ -137,27 +123,57 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
                     resolve();
                     break;
                 case Status.Run:
-                case Status.LastRun:
-                    const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-                    if (ret && ret.debuggerTrap) {
-                        this.status = Status.Edit;
-                        this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-                    }
-                    else {
-                        this.lineHistory.historyIndex++;
-                        if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex) {
-                            this.lineHistory.historyIndex--;
-                            if (this.status == Status.LastRun) {
+                    if (this._isMature()) {
+                        if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
+                            if (this.lineHistory.historyIndex == 0) {
+                                that.rebuild.console.log("!!Edit please ");
+                                this.status = Status.Edit;
+                                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+                            }
+                            else {
                                 this.status = Status.Dead;
                                 this.markDead();
                             }
-                            else {
-                                this.lineHistory.rewind();
+                            resolve();
+                        }
+                        else {
+                            const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+                            if (ret && ret.debuggerTrap) {
                                 this.status = Status.Edit;
+                                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
                             }
+                            else {
+                                this.lineHistory.historyIndex++;
+                            }
+                            resolve();
                         }
                     }
-                    resolve();
+                    else {
+                        ///This where we are entering when else part of the for subjuect to tun 
+                        if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
+                            if (this.lineHistory.historyIndex == 0) {
+                                that.rebuild.console.log("!!Edit please ");
+                                this.status = Status.Edit;
+                                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+                            }
+                            else {
+                                this.status = Status.Dead;
+                                this.markDead();
+                            }
+                            resolve();
+                        }
+                        else {
+                            const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+                            if (ret && ret.debuggerTrap) {
+                                this.status = Status.Edit;
+                                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+                            }
+                            else {
+                                this.lineHistory.historyIndex++;
+                            }
+                            resolve();
+                        }
+                    }
                     break;
                 case Status.Edit:
                     this.stepContext = {

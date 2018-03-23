@@ -79,6 +79,10 @@ class forElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
 	initialize() {
 		this.initializeI();
 		this.mode = this.evaluateExitConditionI() ? Mode.If : Mode.Else;
+
+
+
+
 		this.unarchiveStatement(this.mode == Mode.If);//Evaluate
 		if (!this._isForced()) {
 			this.status = Status.LastRun;
@@ -187,40 +191,76 @@ class forElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
 					break;
 				case Status.Run:
 				case Status.LastRun:
-				if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
-					if (this.lineHistory.historyIndex == 0) {
-						that.rebuild.console.log("!!Edit please ");
-						this.status = Status.Edit;
-						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-					}
-					else {
-						this.incrementI();
-						this.lineHistory.historyIndex = 0;
-						if (!this.evaluateExitConditionI()) {
-							if (this.status == Status.LastRun) {
-								this.status = Status.Dead;
-								this.markDead();
+					if (this._isMature()) {
+						if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
+							if (this.lineHistory.historyIndex == 0) {
+								that.rebuild.console.log("!!Edit please ");
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 							}
 							else {
-								this.initializeI();								
-								this.lineHistory.rewind();
-								this.status = Status.Edit;
+								this.incrementI();
+								this.lineHistory.historyIndex = 0;
+								if (!this.evaluateExitConditionI()) {
+									if (this.status == Status.LastRun) {
+										this.status = Status.Dead;
+										this.markDead();
+									}
+									else {
+										this.initializeI();
+										this.lineHistory.rewind();
+										this.status = Status.Edit;
+									}
+								}
 							}
-						}
-					}
-					resolve();
-				} else {
+							resolve();
+						} else {
 
-					const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-					if (ret && ret.debuggerTrap) {
-						this.status = Status.Edit;
-						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+							if (ret && ret.debuggerTrap) {
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								this.lineHistory.historyIndex++;
+							}
+							resolve();
+						}
+					} else {
+
+						///This where we are entering when else part of the for subjuect to tun 
+						if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) { //End of loop
+							if (this.lineHistory.historyIndex == 0) { //Empty else part
+								that.rebuild.console.log("!!Edit please ");
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								if (this.status == Status.LastRun) {
+									this.status = Status.Dead;
+									this.markDead();
+								}
+								else {
+									this.lineHistory.rewind();
+									this.status = Status.Edit;
+								}
+							}
+							resolve();
+						} else {
+
+							const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+							if (ret && ret.debuggerTrap) {
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								this.lineHistory.historyIndex++;
+							}
+							resolve();
+						}
+
 					}
-					else {
-						this.lineHistory.historyIndex++;
-					}
-					resolve();
-				}
+
 					break;
 
 				case Status.Edit:
@@ -306,21 +346,36 @@ class forElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 	}
 
+	processByMacros(answer: basicStepprocessor.answer) {
+		if (!answer.key)
+			return answer;
+
+		var answer2 = answer;
+		switch (answer.key.name) {
+			case 'u':
+				answer2.line = '.checkback';
+				this.stepContext.traceParsed = false;
+				break;
+
+			case 'r':
+				answer2.line = '.run';
+				this.stepContext.traceParsed = false;
+
+				break;
+			default:
+				answer2 = super.processByMacros(answer2);
+		}
+
+		return answer2;
+
+	}
+
 
 	processCommand(command: Ast.Command) {
 
 		if (command instanceof Ast.CustomCommand) {
 
 			switch (command.name) {
-				case 'run':
-					this.lineHistory.historyIndex = 0; //TODO: not to access the variable
-					this.status = Status.Run;
-					this.initializeI();
-
-					break;
-				case 'rewind':
-					this.stepContext.needToRewindHistory = true;
-					break;
 				case 'quit':
 					this.status = Status.Quit;
 					this.markDead(stepProcessors.DeathReason.abort);
@@ -351,5 +406,8 @@ class forElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 
 }
+
+
+
 
 exports.forElseStepProcessor = forElseStepProcessor;

@@ -3,32 +3,32 @@ import Ast = require('./ast.js');
 import stepProcessors = require('./stepprocessor.js');
 import StackedSentenceHistory = require('./StackedSentenceHistory.js');
 enum Status {
-	Idle, Edit, Run, LastRun, Dead, Quit
+	Idle, Edit, Run, Dead, Quit
 };
 
 import assert = require('assert');
 
 
-enum Mode  { If, Else, Undecided };
+enum Mode { If, Else, Undecided };
 
 class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
-	mode:Mode;
-	status:Status;
+	mode: Mode;
+	status: Status;
 
 	constructor(rebuild: any, private statement: Ast.ifStatement,
-		superVarTable: any, 
-		private options:any) {
+		superVarTable: any,
+		private options: any) {
 
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
-		
+
 		this.macros += "u";
 		this.mode = Mode.Undecided;
 		this.status = Status.Edit;
 
 		if (!this.options) {
-            this.options = {};
-        }
-		
+			this.options = {};
+		}
+
 
 	}
 
@@ -58,7 +58,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		this.mode = this.evaluateCondition() ? Mode.If : Mode.Else;
 		this.unarchiveStatement(this.mode == Mode.If);//Evaluate
 		if (!this._isForced()) {
-			this.status = Status.LastRun;
+			this.status = Status.Run;
 		} else {
 			this.lineHistory.rewind();
 			this.status = Status.Edit;
@@ -68,7 +68,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		this.lineHistory.historyIndex = 0;
 	}
 
-	archiveStatement():void {
+	archiveStatement(): void {
 
 		if (this.mode == Mode.If) {
 			this.statement.subStatements = [];
@@ -76,13 +76,13 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		} else {
 			this.statement.negetiveSubStatements = [];
 		}
-		this.lineHistory.getContent().forEach((statement:Ast.Sentence) => {
+		this.lineHistory.getContent().forEach((statement: Ast.Sentence) => {
 
 			if (statement instanceof Ast.executableStatement) {
 				if (this.mode == Mode.If) {
 					this.statement.subStatements.push(statement);
 
-				}else{
+				} else {
 					this.statement.negetiveSubStatements.push(statement);
 				}
 			}
@@ -90,24 +90,17 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		});
 	}
 
-	unarchiveStatement(isTrue:boolean) {
+
+	unarchiveStatement(isTrue: boolean) {
 		if (isTrue) {
-			if (this.statement.subStatements.length) {
-				this.statement.subStatements.forEach( (argument:Ast.Sentence)=> {
-					this.lineHistory._internalAdd(argument);
-				});
 
-			} else {
-
-				this.statement.subStatements.forEach( (argument:Ast.Sentence)=> {
-					this.lineHistory._internalAdd(argument);
-				});
-
-			}
+			this.statement.subStatements.forEach((argument: Ast.Sentence) => {
+				this.lineHistory._internalAdd(argument);
+			});
 
 
 		} else {
-			this.statement.negetiveSubStatements.forEach((argument:Ast.Sentence)=> {
+			this.statement.negetiveSubStatements.forEach((argument: Ast.Sentence) => {
 				this.lineHistory._internalAdd(argument);
 			});
 
@@ -121,15 +114,15 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 		return this.mode == Mode.If;
 	}
 
-	processElseStatement(answer:basicStepprocessor.answer) {
+	processElseStatement(answer: basicStepprocessor.answer) {
 		this.processStep(answer);
 	}
 
 
 
- 
 
-	runStep(argument:any) {
+
+	runStep(argument: any) {
 
 		var that = this;
 
@@ -139,7 +132,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 			this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 		}
 
-		function runner(statement:Ast.Statement) {
+		function runner(statement: Ast.Statement) {
 
 			if (statement instanceof Ast.DebuggerTrap) {
 				const debuggerTrapStatment = statement as Ast.DebuggerTrap;
@@ -150,12 +143,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 			}
 
-			if (statement instanceof Ast.UnProcessedSentence) {
-				that.rebuild.console.log("!!Edit please ");
-				return {
-					debuggerTrap: true
-				};
-			}
+
 
 			if (statement instanceof Ast.executableStatement) {
 				that.processStatement(statement);
@@ -163,7 +151,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 		}
 
-		return new Promise<void>((resolve:any) => {
+		return new Promise<void>((resolve: any) => {
 
 
 			switch (this.status) {
@@ -171,29 +159,59 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 					resolve();
 					break;
 				case Status.Run:
-				case Status.LastRun:
-
-					const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-					if (ret && ret.debuggerTrap) {
-						this.status = Status.Edit;
-						this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-					} else {
-						this.lineHistory.historyIndex++;
-
-						if (this.lineHistory.historyIndex == this.lineHistory.writeHistoryIndex ) {
-							this.lineHistory.historyIndex--;
-
-							if (this.status == Status.LastRun) {
+					if (this._isMature()) {
+						if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
+							if (this.lineHistory.historyIndex == 0) {
+								that.rebuild.console.log("!!Edit please ");
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
 								this.status = Status.Dead;
 								this.markDead();
-							} else {
-								this.lineHistory.rewind();
-								this.status = Status.Edit;
 							}
-						}
-					}
+							resolve();
+						} else {
 
-					resolve();
+							const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+							if (ret && ret.debuggerTrap) {
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								this.lineHistory.historyIndex++;
+							}
+							resolve();
+						}
+					} else {
+
+						///This where we are entering when else part of the for subjuect to tun 
+						if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) { //End of loop
+							if (this.lineHistory.historyIndex == 0) { //Empty else part
+								that.rebuild.console.log("!!Edit please ");
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								this.status = Status.Dead;
+								this.markDead();
+
+							}
+							resolve();
+						} else {
+
+							const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+							if (ret && ret.debuggerTrap) {
+								this.status = Status.Edit;
+								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+							}
+							else {
+								this.lineHistory.historyIndex++;
+							}
+							resolve();
+						}
+
+					}
 
 					break;
 
@@ -209,7 +227,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 							history: this.lineHistory,
 							prompt: this.setPrompt("if }"),
 							macros: this.macros
-						}).then((answer: basicStepprocessor.answer)=> {
+						}).then((answer: basicStepprocessor.answer) => {
 
 							this.processStep(answer);
 							resolve();
@@ -223,7 +241,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 							prompt: this.setPrompt("else }"),
 							macros: this.macros
 
-						}).then((answer:basicStepprocessor.answer) => {
+						}).then((answer: basicStepprocessor.answer) => {
 
 							this.processElseStatement(answer);
 							resolve();
@@ -248,7 +266,8 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 	}
 
 
-	updateHistory(sentence:Ast.Sentence) {
+
+	updateHistory(sentence: Ast.Sentence) {
 
 		if (this.stepContext.addToHistory) {
 			this.addToHistory(sentence);
@@ -261,7 +280,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 	}
 
-	addToHistory(sentence:Ast.Sentence) {
+	addToHistory(sentence: Ast.Sentence) {
 
 		const writeContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
 		var replace = false;
@@ -273,7 +292,7 @@ class ifStepProcessor extends basicStepprocessor.BasicStepProcessor {
 
 		this.rebuild.addHistoryEntry(sentence, {
 			replace: replace,
-			incrementer: (statement :Ast.Statement) => statement instanceof Ast.executableStatement ||
+			incrementer: (statement: Ast.Statement) => statement instanceof Ast.executableStatement ||
 				statement instanceof Ast.UnProcessedSentence
 		});
 

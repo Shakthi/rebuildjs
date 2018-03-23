@@ -4,7 +4,7 @@ const JisonParser = require("jison").Parser;
 
 
 const basicStatmentFun = "\n" +
-    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to']; \n" +
+    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to','pass']; \n" +
     "\n";
 
 
@@ -83,6 +83,8 @@ const grammar = {
             ["if condition EOF", "$$= new yy.ifStatement($2); return($$);"],
             ["COMMAND EOF", "$$ = new yy.CustomCommand($1); return($$); "],
             ["COMMENT EOF", "$$ = new yy.LineComment($1); return($$); "],
+            ["pass EOF", "$$ = new yy.PassStatement(); return($$); "],
+
 
 
 

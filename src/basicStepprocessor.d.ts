@@ -30,6 +30,8 @@ declare namespace BasicStepProcessor {
 		varTable: any;
 		processStep(a: answer): void;
 		processStatement(a: Ast.Statement): void;
+		processByMacros(a: answer): answer;
+		
 		rebuild: any;
 		setPrompt(a: string): void;
 		markDead(a?:any): void;
