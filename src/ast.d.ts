@@ -70,19 +70,23 @@ declare namespace astNameSpace {
 	}
 
 
-	class ifStatement extends executableStatement {
-		constructor(condition: expression);
-		condition: expression;
+	class ifStatementForIfElseStatement extends executableStatement {
 		subStatements: Sentence[];
 		negetiveSubStatements: Sentence[];
 	}
 
 
-	class forStatement extends executableStatement {
+
+	class ifStatement extends ifStatementForIfElseStatement {
+		constructor(condition: expression);
+		condition: expression;
+		
+	}
+
+
+	class forStatement extends ifStatementForIfElseStatement {
 
 		constructor(varName: string, fromExpression: expression, toExpression: expression);
-		subStatements: Sentence[];
-		negetiveSubStatements: Sentence[];
 		varName: string;
 		fromExpression: expression;
 		toExpression: expression;

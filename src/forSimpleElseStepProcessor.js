@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const superClass = require("./forIfElseStepProcessor");
 const Ast = require("./ast.js");
 const stepProcessors = require("./stepprocessor.js");
-const superClass = require("./forIfElseStepProcessor");
 const assert = require("assert");
-class ifStepProcessor extends superClass.forIfElseStepProcessor {
+class forElseStepProcessor extends superClass.forIfElseStepProcessor {
     constructor(rebuild, statement, superVarTable, options) {
         super(rebuild, statement, superVarTable, options);
-        this.ifStatement = statement;
+        this.forStatement = statement;
     }
     onEnter() {
         super.onEnter();
@@ -15,11 +15,25 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
     onExit() {
         super.onExit();
     }
-    evaluateCondition() {
+    initializeI() {
+        var beginvalue = this.forStatement.fromExpression.evaluate(this.varTable);
+        this.varTable.setEntry(this.forStatement.varName, beginvalue);
+    }
+    getIValue() {
+        return this.varTable.getEntry(this.forStatement.varName);
+    }
+    evaluateExitConditionI() {
         //var beginvalue = this.statement.toExpression.evaluate(this.varTable);
-        return this.ifStatement.condition.evaluate(this.varTable);
+        var endvalue = this.forStatement.toExpression.evaluate(this.varTable);
+        var forValue = this.getIValue();
+        return (forValue <= endvalue);
+    }
+    incrementI() {
+        this.varTable.setEntry(this.forStatement.varName, this.varTable.getEntry(this.forStatement.varName) + 1);
     }
     initialize() {
+        this.initializeI();
+        this.mode = this.evaluateExitConditionI() ? superClass.Mode.If : superClass.Mode.Else;
         super.initialize();
     }
     runStep(argument) {
@@ -55,8 +69,12 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
                                 this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
                             }
                             else {
-                                this.status = superClass.Status.Dead;
-                                this.markDead();
+                                this.incrementI();
+                                this.lineHistory.historyIndex = 0;
+                                if (!this.evaluateExitConditionI()) {
+                                    this.status = superClass.Status.Dead;
+                                    this.markDead();
+                                }
                             }
                             resolve();
                         }
@@ -106,7 +124,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
                     if (this._isMature()) {
                         this.rebuild.getLine({
                             history: this.lineHistory,
-                            prompt: this.setPrompt("if }"),
+                            prompt: this.setPrompt("for " + this.forStatement.varName + "}"),
                             macros: this.macros
                         }).then((answer) => {
                             this.processStep(answer);
@@ -116,7 +134,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
                     else {
                         this.rebuild.getLine({
                             history: this.lineHistory,
-                            prompt: this.setPrompt("else }"),
+                            prompt: this.setPrompt("forelse }"),
                             macros: this.macros
                         }).then((answer) => {
                             this.processElseStatement(answer);
@@ -129,28 +147,5 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
             }
         });
     }
-    updateHistory(sentence) {
-        if (this.stepContext.addToHistory) {
-            this.addToHistory(sentence);
-        }
-        if (this.stepContext.needToRewindHistory) {
-            this.lineHistory.rewind();
-        }
-    }
-    addToHistory(sentence) {
-        const writeContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
-        var replace = false;
-        if (writeContent instanceof Ast.UnProcessedSentence) {
-            replace = false;
-        }
-        else {
-            replace = true;
-        }
-        this.rebuild.addHistoryEntry(sentence, {
-            replace: replace,
-            incrementer: (statement) => statement instanceof Ast.executableStatement ||
-                statement instanceof Ast.UnProcessedSentence
-        });
-    }
 }
-exports.ifStepProcessor = ifStepProcessor;
+exports.forElseStepProcessor = forElseStepProcessor;

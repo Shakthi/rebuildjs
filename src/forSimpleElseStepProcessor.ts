@@ -1,41 +1,68 @@
 import basicStepprocessor = require('./basicStepprocessor.js');
+import superClass = require('./forIfElseStepProcessor');
+
+
 import Ast = require('./ast.js');
 import stepProcessors = require('./stepprocessor.js');
 import StackedSentenceHistory = require('./StackedSentenceHistory.js');
-import superClass = require('./forIfElseStepProcessor');
 import assert = require('assert');
 
 
 
-class ifStepProcessor extends superClass.forIfElseStepProcessor {
-	ifStatement: Ast.ifStatement;
 
-	constructor(rebuild: any, statement: Ast.ifStatement,
+
+
+class forElseStepProcessor extends superClass.forIfElseStepProcessor {
+
+	forStatement: Ast.forStatement;
+
+
+
+	constructor(rebuild: any, statement: Ast.forStatement,
 		superVarTable: any,
 		options: any) {
-
 		super(rebuild, statement, superVarTable, options);
-		this.ifStatement = statement;
+		this.forStatement = statement;
+
 	}
 
 
 	onEnter() {
 		super.onEnter();
-		
 	}
 
 	onExit() {
 		super.onExit();
 	}
-	
-	evaluateCondition() {
-		//var beginvalue = this.statement.toExpression.evaluate(this.varTable);
-		return this.ifStatement.condition.evaluate(this.varTable);
 
+	initializeI() {
+		var beginvalue = this.forStatement.fromExpression.evaluate(this.varTable);
+		this.varTable.setEntry(this.forStatement.varName, beginvalue);
+	}
+
+
+	getIValue() {
+		return this.varTable.getEntry(this.forStatement.varName);
+	}
+
+	evaluateExitConditionI(): boolean {
+		//var beginvalue = this.statement.toExpression.evaluate(this.varTable);
+		var endvalue = this.forStatement.toExpression.evaluate(this.varTable);
+		var forValue = this.getIValue();
+
+		return (forValue <= endvalue);
+	}
+
+
+	incrementI() {
+		this.varTable.setEntry(this.forStatement.varName, this.varTable.getEntry(this.forStatement.varName) + 1);
 	}
 
 	initialize() {
+		this.initializeI();
+		this.mode = this.evaluateExitConditionI() ? superClass.Mode.If : superClass.Mode.Else;
 		super.initialize();
+
 	}
 
 	
@@ -88,8 +115,12 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 								this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 							}
 							else {
-								this.status = superClass.Status.Dead;
-								this.markDead();
+								this.incrementI();
+								this.lineHistory.historyIndex = 0;
+								if (!this.evaluateExitConditionI()) {
+									this.status = superClass.Status.Dead;
+									this.markDead();
+								}
 							}
 							resolve();
 						} else {
@@ -146,7 +177,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 						this.rebuild.getLine({
 							history: this.lineHistory,
-							prompt: this.setPrompt("if }"),
+							prompt: this.setPrompt("for " + this.forStatement.varName + "}"),
 							macros: this.macros
 						}).then((answer: basicStepprocessor.answer) => {
 
@@ -159,7 +190,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 						this.rebuild.getLine({
 							history: this.lineHistory,
-							prompt: this.setPrompt("else }"),
+							prompt: this.setPrompt("forelse }"),
 							macros: this.macros
 
 						}).then((answer: basicStepprocessor.answer) => {
@@ -188,39 +219,11 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 
-	updateHistory(sentence: Ast.Sentence) {
-
-		if (this.stepContext.addToHistory) {
-			this.addToHistory(sentence);
-		}
-
-		if (this.stepContext.needToRewindHistory) {
-
-			this.lineHistory.rewind();
-		}
-
-	}
-
-	addToHistory(sentence: Ast.Sentence) {
-
-		const writeContent = this.lineHistory.getContent()[this.lineHistory.getWriteHistoryIndex()];
-		var replace = false;
-		if (writeContent instanceof Ast.UnProcessedSentence) {
-			replace = false;
-		} else {
-			replace = true;
-		}
-
-		this.rebuild.addHistoryEntry(sentence, {
-			replace: replace,
-			incrementer: (statement: Ast.Statement) => statement instanceof Ast.executableStatement ||
-				statement instanceof Ast.UnProcessedSentence
-		});
-
-
-	}
 
 
 }
 
-exports.ifStepProcessor = ifStepProcessor;
+
+
+
+exports.forElseStepProcessor = forElseStepProcessor;

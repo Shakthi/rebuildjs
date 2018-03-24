@@ -57,6 +57,6 @@
     // "experimentalDecorators": true,        /* Enables experimental support for ES7 decorators. */
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
-  "files": ["src/ifStepProcessor.ts" ,"src/forElseStepProcessor.ts","src/forSimpleElseStepProcessor.ts"]
+  "files": ["src/ifStepProcessor.ts" ,"src/forIfElseStepProcessor.ts","src/forSimpleElseStepProcessor.ts"]
 
 }
