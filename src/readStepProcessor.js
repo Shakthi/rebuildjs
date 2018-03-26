@@ -1,5 +1,6 @@
 "use strict";
-const superClass = require('./stepprocessor.js').stepProcessor;
+const stepprocessors = require('./stepprocessor.js');
+const superClass = stepprocessors.stepProcessor;
 
 var readStepProcessor = function(rebuild, statement, superVarTable) {
 	superClass.call(this, rebuild, null, superVarTable)
@@ -40,7 +41,7 @@ readStepProcessor.prototype.runStep = function() {
 		}).then(function(answer) {
 
 			if (answer.key && answer.key.name == "c" && answer.key.ctrl) {
-				self.markDead(superClass.DeathReason.abort);
+				self.markDead(stepprocessors.DeathReason.abort);
 
 			} else {
 
