@@ -121,6 +121,7 @@ declare namespace astNameSpace {
 
 	class expression {
 		evaluate(context: any): any;
+		to3AdressCode(count:number,arr:any[]):number;
 	}
 
 
@@ -135,6 +136,9 @@ declare namespace astNameSpace {
 	class binaryExpression extends expression {
 
 		constructor(operator: string, left: expression, right: expression);
+		left: expression;
+		operator:string;
+		 right: expression;
 
 	}
 
@@ -142,6 +146,7 @@ declare namespace astNameSpace {
 	class terminalExpression extends expression {
 
 		constructor(terminalValue: any);
+		terminalValue:any;
 
 	}
 

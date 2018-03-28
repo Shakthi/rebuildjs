@@ -124,7 +124,18 @@ const grammar = {
             ["( e )", "$$ = new  yy.unaryExpression('GROUP', $2);"],
             ["NUMBER", "$$ = new  yy.terminalExpression(Number(yytext))"],
             ["identifier", "$$ = new  yy.getExpression(yytext)"],
+            ["identifier ( paramList )", "$$ = new  yy.functionExpression($1,$3)"],
 
+
+        ],
+        "paramList": [
+            ["param", "$$ = [ $1 ]"],
+            ["paramList , param", "$1.push($3); $$ = $1;"]
+        ],
+
+        "param": [
+            ["e", "$$ = $1"],
+            ["es", "$$ = $1"]
         ],
 
         "condition":[

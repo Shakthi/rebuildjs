@@ -197,6 +197,7 @@ class printStatement extends executableStatement {
 
 }
 
+
 class endStatement extends Statement {
 	constructor() {
 		super();
@@ -256,48 +257,61 @@ class expression extends Serializable {
 
 
 	evaluate(context) {
-		if (this.terminalValue) {
-			return this.terminalValue;
-		}
-
-		switch (this.operator) {
-			case '+':
-				return this.left.evaluate(context) + this.right.evaluate(context);
-			case '-':
-				return this.left.evaluate(context) - this.right.evaluate(context);
-			case '*':
-				return this.left.evaluate(context) * this.right.evaluate(context);
-			case '/':
-				return this.left.evaluate(context) / this.right.evaluate(context);
-			case '==':
-				return this.left.evaluate(context) == this.right.evaluate(context);
-			case '!=':
-				return this.left.evaluate(context) != this.right.evaluate(context);
-			case '<':
-				return this.left.evaluate(context) < this.right.evaluate(context);
-			case '>':
-				return this.left.evaluate(context) > this.right.evaluate(context);
-			case '<=':
-				return this.left.evaluate(context) <= this.right.evaluate(context);
-			case '>=':
-				return this.left.evaluate(context) >= this.right.evaluate(context);
-
-			case 'UMINUS':
-				return -this.argument.evaluate(context);
-			case 'GROUP':
-				return this.argument.evaluate(context);
-			default :
-			assert(false,'should not come here');
-		}
-
-
-
 	}
 
 
 	factory() {
 		return ast;
 	}
+
+}
+
+
+class functionExpression extends expression{
+	constructor(name,parameters) {
+		super();
+		this.parameters = parameters;
+		this.name = name;
+		
+	}
+
+	
+
+	toCode() {
+		var code = this.name+"(";
+		for (var i = 0; i < this.parameters.length; i++) {
+
+			if (i !== 0)
+				code += ", ";
+
+			code += this.parameters[i].toCode();
+		}
+
+		code += ")"
+		return code;
+	}
+
+	to3AdressCode(counter,irStack){
+		var paramno = [];
+		for (var i = 0; i < this.parameters.length; i++) {
+			paramno[i] = this.parameters.to3AdressCode(counter,irStack);
+			counter = paramno[i];
+		}
+
+		
+		counter++;
+		
+		var msg = "t" + counter + " = "+ this.name +"("
+		for (var i = 0; i < this.parameters.length; i++) {
+			msg += (i!=0)?",":""+"t"+paramno;
+		}	
+		msg+=")"
+		return counter;
+	}
+
+
+
+	
 
 }
 
@@ -326,6 +340,42 @@ class unaryExpression extends expression {
 		}
 		return code;
 	}
+
+	to3AdressCode(counter,irStack){
+		var t1n = this.argument.to3AdressCode(counter,irStack);
+
+		counter= t1n+1;
+		switch (this.operator) {
+			case 'UMINUS':
+			irStack.push("t" + counter + " = -" + t1n);
+			break;
+			case 'GROUP':
+			irStack.push("t" + counter + " = (" + t1n + ")");
+			break;
+		}		
+		return counter;
+	}
+
+
+
+
+
+		evaluate(context) {
+			
+	
+			switch (this.operator) {
+				
+	
+				case 'UMINUS':
+					return -this.argument.evaluate(context);
+				case 'GROUP':
+					return this.argument.evaluate(context);
+				default :
+				assert(false,'should not come here');
+			}
+		}
+
+
 }
 
 
@@ -340,9 +390,51 @@ class binaryExpression extends expression {
 
 	}
 
+	evaluate(context) {
+		
+		switch (this.operator) {
+			case '+':
+				return this.left.evaluate(context) + this.right.evaluate(context);
+			case '-':
+				return this.left.evaluate(context) - this.right.evaluate(context);
+			case '*':
+				return this.left.evaluate(context) * this.right.evaluate(context);
+			case '/':
+				return this.left.evaluate(context) / this.right.evaluate(context);
+			case '==':
+				return this.left.evaluate(context) == this.right.evaluate(context);
+			case '!=':
+				return this.left.evaluate(context) != this.right.evaluate(context);
+			case '<':
+				return this.left.evaluate(context) < this.right.evaluate(context);
+			case '>':
+				return this.left.evaluate(context) > this.right.evaluate(context);
+			case '<=':
+				return this.left.evaluate(context) <= this.right.evaluate(context);
+			case '>=':
+				return this.left.evaluate(context) >= this.right.evaluate(context);
+
+			default :
+			assert(false,'should not come here');
+		}
+
+
+
+	}
+
+
 	toCode() {
 		var code = this.left.toCode() + ' ' + this.operator + ' ' + this.right.toCode();
 		return code;
+	}
+
+	to3AdressCode(counter,irStack){
+		var t1n = this.left.to3AdressCode(counter,irStack);
+		var t2n = this.right.to3AdressCode(t1n,irStack);
+		counter=t2n+1;
+		
+		irStack.push("t" + counter + " = t" + t1n + this.operator + " t"+t2n );
+		return counter;
 	}
 
 
@@ -358,6 +450,10 @@ class terminalExpression extends expression {
 
 	}
 
+	evaluate(context) {
+		return this.terminalValue;
+	}
+
 
 	toCode() {
 		var code = "";
@@ -368,6 +464,14 @@ class terminalExpression extends expression {
 		}
 
 		return code;
+	}
+
+
+	to3AdressCode(counter,irStack){
+		counter++;
+		
+		irStack.push("t" + counter + " = " + this.terminalValue);
+		return counter;
 	}
 
 }
@@ -384,9 +488,25 @@ class getExpression extends expression {
 		return context.getEntry(this.varName);
 	}
 
+	evaluate(context) {
+		return context.getEntry(this.varName);
+	}
+
 	toCode() {
 		var code = this.varName;
 		return code;
+	}
+
+	to3AdressCode(counter,irStack){
+		counter++;		
+		irStack.push("t" + counter + " = " + this.varName);
+		return counter;
+	}
+
+	toPostFix(counter,irStack){
+		counter++;		
+		irStack.push("t" + counter + " = " + this.varName);
+		return counter;
 	}
 
 
@@ -441,6 +561,7 @@ ast.Statement = Statement;
 ast.executableStatement = executableStatement;
 ast.ifStatement = ifStatement;
 ast.PassStatement = PassStatement;
+ast.functionExpression = functionExpression;
 
 
 module.exports = ast;
