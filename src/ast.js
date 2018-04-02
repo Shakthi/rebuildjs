@@ -1,7 +1,7 @@
 "use strict";
 
 const Serializable = require('simple-serial-js');
-const assert =  require('assert');
+const assert = require('assert');
 
 const ast = {};
 class Sentence extends Serializable {
@@ -136,10 +136,10 @@ class ifStatement extends executableStatement {
 
 
 	toCode() {
-		var code = "if " + this.condition.toCode(); 
+		var code = "if " + this.condition.toCode();
 		if (this.subStatements && this.subStatements.length) {
 			code += ":";
-		}else if (this.negetiveSubStatements && this.negetiveSubStatements.length){
+		} else if (this.negetiveSubStatements && this.negetiveSubStatements.length) {
 			code += ";";
 		}
 		return code;
@@ -267,18 +267,18 @@ class expression extends Serializable {
 }
 
 
-class functionExpression extends expression{
-	constructor(name,parameters) {
+class functionExpression extends expression {
+	constructor(name, parameters) {
 		super();
 		this.parameters = parameters;
 		this.name = name;
-		
+
 	}
 
-	
+
 
 	toCode() {
-		var code = this.name+"(";
+		var code = this.name + "(";
 		for (var i = 0; i < this.parameters.length; i++) {
 
 			if (i !== 0)
@@ -291,27 +291,36 @@ class functionExpression extends expression{
 		return code;
 	}
 
-	to3AdressCode(counter,irStack){
+	to3AdressCode(counter, irStack) {
 		var paramno = [];
 		for (var i = 0; i < this.parameters.length; i++) {
-			paramno[i] = this.parameters.to3AdressCode(counter,irStack);
+			paramno[i] = this.parameters.to3AdressCode(counter, irStack);
 			counter = paramno[i];
 		}
 
-		
+
 		counter++;
-		
-		var msg = "t" + counter + " = "+ this.name +"("
+
+		var msg = "t" + counter + " = " + this.name + "("
 		for (var i = 0; i < this.parameters.length; i++) {
-			msg += (i!=0)?",":""+"t"+paramno;
-		}	
-		msg+=")"
+			msg += (i != 0) ? "," : "" + "t" + paramno;
+		}
+		msg += ")"
 		return counter;
 	}
 
 
+	toPostFix(irStack) {
+		for (var i = 0; i < this.parameters.length; i++) {
+			irStack.push("LOAD " + this.operator);
 
-	
+			counter = paramno[i];
+		}
+		this.left.toPostFix(irStack);
+		this.right.toPostFix(irStack);
+		irStack.push("OPERATE " + this.operator);
+	}
+
 
 }
 
@@ -341,41 +350,75 @@ class unaryExpression extends expression {
 		return code;
 	}
 
-	to3AdressCode(counter,irStack){
-		var t1n = this.argument.to3AdressCode(counter,irStack);
+	to3AdressCode(counter, irStack) {
+		var t1n = this.argument.to3AdressCode(counter, irStack);
 
-		counter= t1n+1;
+
 		switch (this.operator) {
 			case 'UMINUS':
-			irStack.push("t" + counter + " = -" + t1n);
-			break;
+				counter = t1n + 1;
+				irStack.push("t" + counter + " = -" + t1n);
+				break;
 			case 'GROUP':
-			irStack.push("t" + counter + " = (" + t1n + ")");
-			break;
-		}		
+				counter = t1n;
+				//irStack.push("t" + counter + " =  t"+ t1n );
+				break;
+		}
 		return counter;
 	}
 
 
-
-
-
-		evaluate(context) {
-			
-	
-			switch (this.operator) {
-				
-	
-				case 'UMINUS':
-					return -this.argument.evaluate(context);
-				case 'GROUP':
-					return this.argument.evaluate(context);
-				default :
-				assert(false,'should not come here');
-			}
+	toPostFix(irStack) {
+		this.argument.toPostFix(irStack);
+		switch (this.operator) {
+			case 'UMINUS':
+				irStack.push("UMINUS");
+				break;
+			case 'GROUP':
+				//irStack.push("LOAD ", """);
+				break;
 		}
 
+	}
 
+
+	evaluate(context) {
+
+
+		switch (this.operator) {
+
+
+			case 'UMINUS':
+				return -this.argument.evaluate(context);
+			case 'GROUP':
+				return this.argument.evaluate(context);
+			default:
+				assert(false, 'should not come here');
+		}
+	}
+
+
+	toPostFixCode(irStack) {
+		this.argument.toPostFixCode(irStack);
+		
+		if (this.operator == 'UMINUS') {
+			irStack.push(this);	
+		}
+		
+	}
+
+	execute(context, stack) {
+		switch (this.operator) {
+
+
+			case 'UMINUS':
+				stack.push( -stack.pop());
+			case 'GROUP':
+			//stack.push(stack.pop());
+			default:
+				assert(false, 'should not come here');
+		}
+	}
 }
 
 
@@ -391,7 +434,7 @@ class binaryExpression extends expression {
 	}
 
 	evaluate(context) {
-		
+
 		switch (this.operator) {
 			case '+':
 				return this.left.evaluate(context) + this.right.evaluate(context);
@@ -414,8 +457,8 @@ class binaryExpression extends expression {
 			case '>=':
 				return this.left.evaluate(context) >= this.right.evaluate(context);
 
-			default :
-			assert(false,'should not come here');
+			default:
+				assert(false, 'should not come here');
 		}
 
 
@@ -428,13 +471,64 @@ class binaryExpression extends expression {
 		return code;
 	}
 
-	to3AdressCode(counter,irStack){
-		var t1n = this.left.to3AdressCode(counter,irStack);
-		var t2n = this.right.to3AdressCode(t1n,irStack);
-		counter=t2n+1;
-		
-		irStack.push("t" + counter + " = t" + t1n + this.operator + " t"+t2n );
+	to3AdressCode(counter, irStack) {
+		var t1n = this.left.to3AdressCode(counter, irStack);
+		var t2n = this.right.to3AdressCode(t1n, irStack);
+		counter = t2n + 1;
+
+		irStack.push("t" + counter + " = t" + t1n + this.operator + " t" + t2n);
 		return counter;
+	}
+
+	toPostFix(irStack) {
+		this.left.toPostFix(irStack);
+		this.right.toPostFix(irStack);
+		irStack.push("OPERATE " + this.operator);
+	}
+
+	toPostFixCode(irStack) {
+		this.left.toPostFixCode(irStack);
+		this.right.toPostFixCode(irStack);
+		irStack.push(this);
+	}
+
+	execute(context, stack) {
+
+		switch (this.operator) {
+			case '+':
+				stack.push(stack.pop() + stack.pop());
+				break;
+			case '-':
+				stack.push(-stack.pop() + stack.pop());
+				break;
+			case '*':
+				stack.push(stack.pop() * stack.pop());
+				break;
+			case '/':
+				stack.push(1 / stack.pop() * stack.pop());
+				break;
+			case '==':
+				stack.push(stack.pop() == stack.pop());
+				break;
+			case '!=':
+				stack.push(stack.pop() != stack.pop());
+				break;
+			case '<':
+				stack.push(stack.pop() > stack.pop());
+				break;
+			case '>':
+				stack.push(stack.pop() < stack.pop());
+				break;
+			case '<=':
+				stack.push(stack.pop() >= stack.pop());
+				break;
+			case '>=':
+				stack.push(stack.pop() <= stack.pop());
+
+
+			default:
+				assert(false, 'should not come here');
+		}
 	}
 
 
@@ -467,12 +561,25 @@ class terminalExpression extends expression {
 	}
 
 
-	to3AdressCode(counter,irStack){
+	to3AdressCode(counter, irStack) {
 		counter++;
-		
+
 		irStack.push("t" + counter + " = " + this.terminalValue);
 		return counter;
 	}
+
+
+	toPostFix(irStack) {
+		irStack.push("LOAD " + this.terminalValue);
+	}
+
+	toPostFixCode(irStack) {
+		irStack.push(this);
+	}
+	execute(context, stack) {
+		stack.push(this.terminalValue);
+	}
+
 
 }
 
@@ -492,22 +599,30 @@ class getExpression extends expression {
 		return context.getEntry(this.varName);
 	}
 
+	execute(context, stack) {
+		stack.push(context.getEntry(this.varName));
+	}
+
 	toCode() {
 		var code = this.varName;
 		return code;
 	}
 
-	to3AdressCode(counter,irStack){
-		counter++;		
+	to3AdressCode(counter, irStack) {
+		counter++;
 		irStack.push("t" + counter + " = " + this.varName);
 		return counter;
 	}
 
-	toPostFix(counter,irStack){
-		counter++;		
-		irStack.push("t" + counter + " = " + this.varName);
-		return counter;
+	toPostFix(irStack) {
+		irStack.push("LOAD " + this.varName);
 	}
+
+
+	toPostFixCode(irStack) {
+		irStack.push(this);
+	}
+
 
 
 }

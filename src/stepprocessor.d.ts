@@ -15,14 +15,16 @@ declare namespace defaultSpace {
 
 
 		
-
+		rebuild:any;
 		constructor(rebuild: any, history: any);
 		onEnter(): void;
 		getPrompt(): string;
 		getHistory(): any;
 		setPrompt(aprompt: string): void;
-		markDead(deathReason: string): void;
+		markDead(deathReason: DeathReason,result?:any): void;
 		onExit(): void;
+
+		runStep(argument:any):Promise<void>;
 
 	}
 }

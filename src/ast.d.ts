@@ -122,6 +122,9 @@ declare namespace astNameSpace {
 	class expression {
 		evaluate(context: any): any;
 		to3AdressCode(count:number,arr:any[]):number;
+		toPostFix(arr:any[]):void;
+		toPostFixCode(arr:any[]):void;
+		execute(context: any,stack:any[]):void;
 	}
 
 

@@ -57,9 +57,12 @@ rebuild.runStep = function(argument) {
 		processorStack.last().runStep(argument).then(function() {
 
 			var deathNote = null;
+			var result = null;
 
 			if (processorStack.last().isDead) {
 				deathNote = processorStack.last().deathReason;
+				result = processorStack.last().result;
+
 
 				rebuild.exitProcessing();
 
@@ -70,7 +73,7 @@ rebuild.runStep = function(argument) {
 			}
 			else{
 
-				resolve(deathNote);
+				resolve({deathNote,result});
 			}
 
 

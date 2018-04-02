@@ -5,13 +5,13 @@ const VarTable = require('./varTable.js');
 
 
 import assert = require('assert');
-enum Status{Idle,Converted};
+enum Status { Idle, Converted };
 
 class ExpressionProcessor extends stepProcessors.stepProcessor {
 	varTable: any;
-	status:Status;
-	
-	constructor(rebuild: any,private expression: Ast.expression,
+	status: Status;
+
+	constructor(rebuild: any, private expression: Ast.expression,
 		superVarTable: any,
 		options: any) {
 		super(rebuild, null);
@@ -20,10 +20,10 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
 			this.varTable.superEntry = superVarTable;
 		}
 		this.status = Status.Idle;
-	}	
+	}
 
 	//a+b*(c+d)
-    //t1 = c + d
+	//t1 = c + d
 	//t2 = b * t1
 	//result = a + t2
 
@@ -38,27 +38,26 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
 
 
 
-	generate3Address(expression:Ast.expression)
-	{	
-		var threeAddressList:  any []
+	generate3Address(expression: Ast.expression) {
+		var threeAddressList: any[]
 		threeAddressList = [];
 		var tempCount = 0;
 		//Recurisive post order traversal
-		function geneAddress(expression:Ast.expression):number{
+		function geneAddress(expression: Ast.expression): number {
 
-			if( expression instanceof Ast.terminalExpression){
+			if (expression instanceof Ast.terminalExpression) {
 				tempCount++;
-				console.log("t"+tempCount+" = "+(expression as Ast.terminalExpression).terminalValue)
+				console.log("t" + tempCount + " = " + (expression as Ast.terminalExpression).terminalValue)
 				return tempCount;
 
-			} else if(expression instanceof Ast.binaryExpression){
-				const t1 =  geneAddress((expression as Ast.binaryExpression).left);
+			} else if (expression instanceof Ast.binaryExpression) {
+				const t1 = geneAddress((expression as Ast.binaryExpression).left);
 				const t2 = geneAddress((expression as Ast.binaryExpression).right);
 				tempCount++;
-                console.log("t" + tempCount + " = t" + t1 + expression.operator + "t"+t2);
+				console.log("t" + tempCount + " = t" + t1 + expression.operator + "t" + t2);
 				return tempCount;
 
-            }else{
+			} else {
 
 				return 0;
 			}
@@ -71,18 +70,26 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
 	}
 
 
-	runStep(argument: any) {
+	runStep(argument: any):Promise<void> {
 
 		switch (this.status) {
 			case Status.Idle://We start converting to 3 address notation
-			//this.generate3Address(this.expression);
-			var counter = 0; var irlist : any[] =[]; 
-			this.expression.to3AdressCode(counter,irlist);
+				//this.generate3Address(this.expression);
+				var irlist: any[] = [];
+				this.expression.toPostFixCode(irlist);
+				var stack: any[] = [];
+				irlist.forEach(expression => expression.execute(this.varTable,stack));
+				//this.rebuild.console.log(irlist);
+				this.status = Status.Converted;
+				return Promise.resolve();
 
-				break;
-		
+			case Status.Converted:
+
+				this.markDead(stepProcessors.DeathReason.normal,true);
+				return Promise.resolve();
+
 			default:
-				break;
+				return Promise.reject('notexpected');				
 		}
 
 	}

@@ -56,12 +56,18 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
         switch (this.status) {
             case Status.Idle://We start converting to 3 address notation
                 //this.generate3Address(this.expression);
-                var counter = 0;
                 var irlist = [];
-                this.expression.to3AdressCode(counter, irlist);
-                break;
+                this.expression.toPostFixCode(irlist);
+                var stack = [];
+                irlist.forEach(expression => expression.execute(this.varTable, stack));
+                //this.rebuild.console.log(irlist);
+                this.status = Status.Converted;
+                return Promise.resolve();
+            case Status.Converted:
+                this.markDead(stepProcessors.DeathReason.normal, true);
+                return Promise.resolve();
             default:
-                break;
+                return Promise.reject('notexpected');
         }
     }
 }
