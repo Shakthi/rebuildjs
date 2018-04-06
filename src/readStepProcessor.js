@@ -2,7 +2,7 @@
 const stepprocessors = require('./stepprocessor.js');
 const superClass = stepprocessors.stepProcessor;
 
-var readStepProcessor = function(rebuild, statement, superVarTable) {
+var readStepProcessor = function (rebuild, statement, superVarTable) {
 	superClass.call(this, rebuild, null, superVarTable)
 	this.statement = statement;
 	this.prompt = this.statement.prompt;
@@ -13,7 +13,7 @@ var readStepProcessor = function(rebuild, statement, superVarTable) {
 
 readStepProcessor.prototype = Object.create(superClass.prototype);
 
-readStepProcessor.prototype.runStep = function() {
+readStepProcessor.prototype.runStep = async function () {
 
 	if (!this.prompt) {
 		this.prompt = "input ";
@@ -31,53 +31,46 @@ readStepProcessor.prototype.runStep = function() {
 
 
 	var self = this;
-	return new Promise(function(resolve, reject) {
 
-		self.rebuild.getLine({
-			history: self.lineHistory,
-			prompt: self.setPrompt(self.prompt),
-			macros: "c"
+	const answer = await self.rebuild.getLine({
+		history: self.lineHistory,
+		prompt: self.setPrompt(self.prompt),
+		macros: "c"
 
-		}).then(function(answer) {
+	});
 
-			if (answer.key && answer.key.name == "c" && answer.key.ctrl) {
-				self.markDead(stepprocessors.DeathReason.abort);
+	if (answer.key && answer.key.name == "c" && answer.key.ctrl) {
+		self.markDead(stepprocessors.DeathReason.abort);
 
-			} else {
+	} else {
 
-				if (answer.line !== "") {
+		if (answer.line !== "") {
 
-					var inputval = eval(answer.line);
+			var inputval = eval(answer.line);
 
-					if (Array.isArray(inputval)) {
+			if (Array.isArray(inputval)) {
 
-						for (var i = 0; i < self.statement.elements.length; i++) {
+				for (var i = 0; i < self.statement.elements.length; i++) {
 
-							if (i >= inputval.length)
-								break;
-							self.varTable.setEntry(self.statement.elements[i], inputval[i]);
-
-						}
-
-					} else {
-						self.varTable.setEntry(self.statement.elements[0], inputval);
-					}
-
-					self.markDead();
-
-
+					if (i >= inputval.length)
+						break;
+					self.varTable.setEntry(self.statement.elements[i], inputval[i]);
 
 				}
 
+			} else {
+				self.varTable.setEntry(self.statement.elements[0], inputval);
 			}
 
+			self.markDead();
 
 
-			resolve();
 
-		});
+		}
 
-	});
+	}
+
+
 
 
 };

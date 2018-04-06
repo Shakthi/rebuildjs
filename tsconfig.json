@@ -64,10 +64,7 @@
     "files": ["src/ifStepProcessor.ts",
         "src/forIfElseStepProcessor.ts",
         "src/forSimpleElseStepProcessor.ts",
-<<<<<<< HEAD
         "src/FunctionProcessor.ts",
-=======
->>>>>>> Expression stack added
         "src/ExpressionProcessor.ts"
     ]
 }

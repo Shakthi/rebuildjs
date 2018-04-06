@@ -53,7 +53,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 
-	runStep(argument: any) {
+	async runStep(argument: any): Promise<void> {
 		//TODO:All this states need to be moved to coroutine
 
 		switch (this.initStatus) {
@@ -97,121 +97,112 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 				}
 
-				return new Promise<void>((resolve: any) => {
 
 
-					switch (this.status) {
-						case superClass.Status.Dead:
-							resolve();
-							break;
-						case superClass.Status.Run:
-							if (this._isMature()) {
-								if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
-									if (this.lineHistory.historyIndex == 0) {
-										that.rebuild.console.log("!!Edit please ");
-										this.status = superClass.Status.Edit;
-										this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-									}
-									else {
-										this.status = superClass.Status.Dead;
-										this.markDead();
-									}
-									resolve();
-								} else {
-
-									const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-									if (ret && ret.debuggerTrap) {
-										this.status = superClass.Status.Edit;
-										this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-									}
-									else {
-										this.lineHistory.historyIndex++;
-									}
-									resolve();
+				switch (this.status) {
+					case superClass.Status.Dead:
+						return Promise.resolve();
+						
+					case superClass.Status.Run:
+						if (this._isMature()) {
+							if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
+								if (this.lineHistory.historyIndex == 0) {
+									that.rebuild.console.log("!!Edit please ");
+									this.status = superClass.Status.Edit;
+									this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 								}
+								else {
+									this.status = superClass.Status.Dead;
+									this.markDead();
+								}
+								return Promise.resolve();
 							} else {
 
-								///This where we are entering when else part of the for subjuect to tun 
-								if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) { //End of loop
-									if (this.lineHistory.historyIndex == 0) { //Empty else part
-										that.rebuild.console.log("!!Edit please ");
-										this.status = superClass.Status.Edit;
-										this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-									}
-									else {
-										this.status = superClass.Status.Dead;
-										this.markDead();
-
-									}
-									resolve();
-								} else {
-
-									const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-									if (ret && ret.debuggerTrap) {
-										this.status = superClass.Status.Edit;
-										this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-									}
-									else {
-										this.lineHistory.historyIndex++;
-									}
-									resolve();
+								const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+								if (ret && ret.debuggerTrap) {
+									this.status = superClass.Status.Edit;
+									this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
 								}
-
+								else {
+									this.lineHistory.historyIndex++;
+								}
+								return Promise.resolve();
 							}
+						} else {
 
-							break;
+							///This where we are entering when else part of the for subjuect to tun 
+							if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) { //End of loop
+								if (this.lineHistory.historyIndex == 0) { //Empty else part
+									that.rebuild.console.log("!!Edit please ");
+									this.status = superClass.Status.Edit;
+									this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+								}
+								else {
+									this.status = superClass.Status.Dead;
+									this.markDead();
 
-						case superClass.Status.Edit:
-
-							this.stepContext = {
-								addToHistory: true
-							};
-
-							if (this._isMature()) {
-
-								this.rebuild.getLine({
-									history: this.lineHistory,
-									prompt: this.setPrompt("if }"),
-									macros: this.macros
-								}).then((answer: basicStepprocessor.answer) => {
-
-									this.processStep(answer);
-									resolve();
-
-								});
-
+								}
+								return Promise.resolve();
 							} else {
 
-								this.rebuild.getLine({
-									history: this.lineHistory,
-									prompt: this.setPrompt("else }"),
-									macros: this.macros
-
-								}).then((answer: basicStepprocessor.answer) => {
-
-									this.processElseStatement(answer);
-									resolve();
-
-
-								});
-
+								const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+								if (ret && ret.debuggerTrap) {
+									this.status = superClass.Status.Edit;
+									this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+								}
+								else {
+									this.lineHistory.historyIndex++;
+								}
+								return Promise.resolve();
 							}
-							break;
+
+						}
 
 
-						default:
-							assert(false, "should not come here");
+					case superClass.Status.Edit:
+
+						this.stepContext = {
+							addToHistory: true
+						};
+
+						if (this._isMature()) {
+
+							const answer: basicStepprocessor.answer = await this.rebuild.getLine({
+								history: this.lineHistory,
+								prompt: this.setPrompt("if }"),
+								macros: this.macros
+							});
+
+							this.processStep(answer);
+							return Promise.resolve();
 
 
-					}
+						} else {
 
-				});
+							const answer: basicStepprocessor.answer = await this.rebuild.getLine({
+								history: this.lineHistory,
+								prompt: this.setPrompt("else }"),
+								macros: this.macros
+
+							});
+
+							this.processElseStatement(answer);
+							return Promise.resolve();
+
+
+						}
+
+
+					default:
+						assert(false, "should not come here");
+
+
+				}
 
 
 
 			default:
-				assert(false,"Should not come here");
-				break;
+			return Promise.reject( "Should not come here");
 		}
 
 
