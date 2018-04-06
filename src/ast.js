@@ -272,6 +272,8 @@ class functionExpression extends expression {
 		super();
 		this.parameters = parameters;
 		this.name = name;
+		this.subStatements = [];
+		this.negetiveSubStatements = [];
 
 	}
 
@@ -294,7 +296,7 @@ class functionExpression extends expression {
 	to3AdressCode(counter, irStack) {
 		var paramno = [];
 		for (var i = 0; i < this.parameters.length; i++) {
-			paramno[i] = this.parameters.to3AdressCode(counter, irStack);
+			paramno[i] = this.parameters[i].to3AdressCode(counter, irStack);
 			counter = paramno[i];
 		}
 
@@ -306,19 +308,33 @@ class functionExpression extends expression {
 			msg += (i != 0) ? "," : "" + "t" + paramno;
 		}
 		msg += ")"
+		irStack.push(msg);
 		return counter;
 	}
 
 
 	toPostFix(irStack) {
 		for (var i = 0; i < this.parameters.length; i++) {
-			irStack.push("LOAD " + this.operator);
-
-			counter = paramno[i];
+			this.parameters[i].toPostFix(irStack);
 		}
-		this.left.toPostFix(irStack);
-		this.right.toPostFix(irStack);
-		irStack.push("OPERATE " + this.operator);
+		irStack.push("CALL " + this.name);
+	}
+
+
+	toPostFixCode(irStack) {
+		for (var i = 0; i < this.parameters.length; i++) {
+			this.parameters[i].toPostFixCode(irStack);
+		}
+		irStack.push(this);
+	}
+
+
+	execute(context, stack) {
+		var argumentList = [];
+		for (var i = 0; i < this.parameters.length; i++) {
+			argumentList[i]=stack.pop();
+		}
+		throw {type:'externalFunction',function:this,argumentList: argumentList};
 	}
 
 
@@ -375,7 +391,6 @@ class unaryExpression extends expression {
 				irStack.push("UMINUS");
 				break;
 			case 'GROUP':
-				//irStack.push("LOAD ", """);
 				break;
 		}
 
@@ -409,12 +424,10 @@ class unaryExpression extends expression {
 
 	execute(context, stack) {
 		switch (this.operator) {
-
-
 			case 'UMINUS':
 				stack.push( -stack.pop());
+				break;
 			case 'GROUP':
-			//stack.push(stack.pop());
 			default:
 				assert(false, 'should not come here');
 		}

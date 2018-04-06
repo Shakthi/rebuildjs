@@ -146,6 +146,12 @@ declare namespace astNameSpace {
 	}
 
 
+	class functionExpression extends ifStatementForIfElseStatement {
+		constructor(name:string, parameters:any[]);
+		name:string;
+	}
+
+
 	class terminalExpression extends expression {
 
 		constructor(terminalValue: any);

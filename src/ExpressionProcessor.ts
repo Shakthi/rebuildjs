@@ -1,95 +1,68 @@
 import Ast = require('./ast.js');
 import stepProcessors = require('./stepprocessor.js');
+import functionProcessors = require('./FunctionProcessor');
 
 const VarTable = require('./varTable.js');
 
 
 import assert = require('assert');
-enum Status { Idle, Converted };
+enum Status { Idle, Execute };
 
 class ExpressionProcessor extends stepProcessors.stepProcessor {
 	varTable: any;
 	status: Status;
+	stackMachineCode: any[];
+	execStack: any[];
 
 	constructor(rebuild: any, private expression: Ast.expression,
 		superVarTable: any,
 		options: any) {
 		super(rebuild, null);
 		this.varTable = new VarTable();
+		this.stackMachineCode = [];
+		this.execStack = [];
 		if (superVarTable) {
 			this.varTable.superEntry = superVarTable;
 		}
 		this.status = Status.Idle;
 	}
 
-	//a+b*(c+d)
-	//t1 = c + d
-	//t2 = b * t1
-	//result = a + t2
-
-	//+a*b+cd
 
 
 
-	// evaluate() {
-	// 	//var beginvalue = this.statement.toExpression.evaluate(this.varTable);
-	// 	return this.expression.evaluate(this.varTable);
-	// }
 
 
-
-	generate3Address(expression: Ast.expression) {
-		var threeAddressList: any[]
-		threeAddressList = [];
-		var tempCount = 0;
-		//Recurisive post order traversal
-		function geneAddress(expression: Ast.expression): number {
-
-			if (expression instanceof Ast.terminalExpression) {
-				tempCount++;
-				console.log("t" + tempCount + " = " + (expression as Ast.terminalExpression).terminalValue)
-				return tempCount;
-
-			} else if (expression instanceof Ast.binaryExpression) {
-				const t1 = geneAddress((expression as Ast.binaryExpression).left);
-				const t2 = geneAddress((expression as Ast.binaryExpression).right);
-				tempCount++;
-				console.log("t" + tempCount + " = t" + t1 + expression.operator + "t" + t2);
-				return tempCount;
-
-			} else {
-
-				return 0;
-			}
-		}
-
-		geneAddress(expression);
-
-		return threeAddressList;
-
-	}
-
-
-	runStep(argument: any):Promise<void> {
+	runStep(argument: any): Promise<void> {
 
 		switch (this.status) {
 			case Status.Idle://We start converting to 3 address notation
-				//this.generate3Address(this.expression);
-				var irlist: any[] = [];
-				this.expression.toPostFixCode(irlist);
-				var stack: any[] = [];
-				irlist.forEach(expression => expression.execute(this.varTable,stack));
-				//this.rebuild.console.log(irlist);
-				this.status = Status.Converted;
+				////this.generate3Address(this.expression);
+				var a: any[] = [];
+				this.expression.to3AdressCode(0, a);
+				this.rebuild.console.log(a);
+				this.expression.toPostFixCode(this.stackMachineCode);
+				this.status = Status.Execute;
 				return Promise.resolve();
 
-			case Status.Converted:
+			case Status.Execute:
+				try {
+					this.stackMachineCode.shift().execute(this.varTable, this.execStack);
+					if (this.stackMachineCode.length == 0) {
+						this.markDead(stepProcessors.DeathReason.normal, this.execStack.pop());
+					}
+				} catch (err) {
+					if(err.type == 'externalFunction'){
+						var processor = new functionProcessors(this.rebuild,
+							err.function, this.varTable, {});
+						this.rebuild.addNewProcessor(processor);
+					}
+				}
 
-				this.markDead(stepProcessors.DeathReason.normal,true);
+
 				return Promise.resolve();
 
 			default:
-				return Promise.reject('notexpected');				
+				return Promise.reject('notexpected');
 		}
 
 	}
