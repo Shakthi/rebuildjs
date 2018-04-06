@@ -27,14 +27,6 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
 	}
 
 
-	onEnter() {
-		super.onEnter();
-	}
-
-	onExit() {
-		super.onExit();
-	}
-
 	initializeI() {
 		var beginvalue = this.forStatement.fromExpression.evaluate(this.varTable);
 		this.varTable.setEntry(this.forStatement.varName, beginvalue);
@@ -70,7 +62,7 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 
-	runStep(argument: any) {
+	runStep(argument: any): Promise<void> {
 
 		var that = this;
 

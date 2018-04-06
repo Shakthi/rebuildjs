@@ -37,88 +37,67 @@ rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
 rebuild.isAlive = true;
 
-rebuild.runStep = function(argument) {
-
-
-	return new Promise(function(resolve, reject) {
-
-
-		if (!waitingProcessorStack.empty()) {
-
-			rebuild.enterProcessing(waitingProcessorStack.shift());
-
-		}
-
-		if (processorStack.length === 0) {
-			reject("empty processor");
-			return;
-		}
-
-		processorStack.last().runStep(argument).then(function() {
-
-			var deathNote = null;
-			var result = null;
-
-			if (processorStack.last().isDead) {
-				deathNote = processorStack.last().deathReason;
-				result = processorStack.last().result;
-
-
-				rebuild.exitProcessing();
-
-			}
-
-			if (!rebuild.isAlive){
-				reject("request termination");
-			}
-			else{
-
-				resolve({deathNote,result});
-			}
-
-
-		}).catch(function(reason) {
-
-
-			console.log("Caught ", reason);
-
-		});
+rebuild.runStep = async function (argument) {
 
 
 
-	});
+	if (!waitingProcessorStack.empty()) {
+
+		rebuild.enterProcessing(waitingProcessorStack.shift());
+
+	}
+
+	if (processorStack.length === 0) {
+		throw("empty processor");
+	}
+
+	await processorStack.last().runStep(argument);
+
+	var deathNote = null;
+	var result = null;
+
+	if (processorStack.last().isDead) {
+		deathNote = processorStack.last().deathReason;
+		result = processorStack.last().result;
+		rebuild.exitProcessing();
+	}
+
+	if (!rebuild.isAlive) {
+		throw ("request termination");
+	}
 
 
+	return ({ deathNote, result });
 
 };
 
-rebuild.getLine = function(options) {
+rebuild.getLine = function (options) {
 	options.recordSession = true;
 	return currentReadlile.getLine(options);
 };
 
-rebuild.getHistoryStack = function() {
+rebuild.getHistoryStack = function () {
 	return historyStack;
 };
 
 
-rebuild.SetHistoryEnabled = function(value) {
+rebuild.SetHistoryEnabled = function (value) {
 	isHistoryEnabled = value;
 };
 
-rebuild.addHistoryEntry = function(entry, options) {
+rebuild.addHistoryEntry = function (entry, options) {
 	if (isHistoryEnabled)
 		historyStack.top().add(entry, options);
 };
 
 
 
-rebuild.addNewProcessor = function(argument) {
+rebuild.addNewProcessor = function (argument) {
 
 	waitingProcessorStack.push(argument);
 };
 
-rebuild.exitProcessing = function() {
+rebuild.exitProcessing = function () {
 
 
 	promptManager.pop();
@@ -130,7 +109,7 @@ rebuild.exitProcessing = function() {
 };
 
 
-rebuild.enterProcessing = function(argument) {
+rebuild.enterProcessing = function (argument) {
 
 	if (!processorStack.empty())
 		promptManager.push(processorStack.top().getPrompt());
@@ -144,18 +123,18 @@ rebuild.enterProcessing = function(argument) {
 
 };
 
-rebuild.getPrompt = function() {
+rebuild.getPrompt = function () {
 	return promptManager.getPrompt();
 };
 
 
-rebuild.setPrompt = function(prompt) {
+rebuild.setPrompt = function (prompt) {
 	return promptManager.setPrompt(prompt);
 };
 
 
 
-rebuild.init = function(argv) {
+rebuild.init = function (argv) {
 
 	this.testCommand = argv.testCommand;
 	this.addNewProcessor(new stepprocessor(rebuild, lineHistory));
@@ -163,7 +142,7 @@ rebuild.init = function(argv) {
 
 
 
-rebuild.save = function() {
+rebuild.save = function () {
 
 	var obj = {
 		lineHistory: lineHistory.toJson(),
@@ -176,7 +155,7 @@ rebuild.save = function() {
 
 
 
-rebuild.load = function() {
+rebuild.load = function () {
 	try {
 
 		var obj = JSON.parse(fs.readFileSync(getFileSave(), 'utf8'));
@@ -195,7 +174,7 @@ function getFileSave() {
 	return process.env.HOME + "/.rebuildjs.alldb.json";
 }
 
-rebuild.setReadline = function(areadline) {
+rebuild.setReadline = function (areadline) {
 
 	var old = readline;
 	currentReadlile = areadline;

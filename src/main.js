@@ -2,41 +2,32 @@
 var rebuild = require('./rebuild.js');
 
 
-function main(args) {
+async function main(args) {
 
 	var argv = require('minimist')(args);
 	rebuild.load();
 	rebuild.init(argv);
 
-	rebuild.selfTest().then(function() {
+	await rebuild.selfTest();
 
 
-		function runloop(argument) {
+	async function runloop(argument) {
 
-			rebuild.runStep(argument).then(function(result) {
-
-				runloop(result);
-
-			}).catch(function(reason) {
-
-				if (reason == "empty processor" || reason == "request termination") {
-					console.log("Finished ");
-					rebuild.save();
-				} else
-					throw (reason);
-			});
-
+		try {
+			const result = await rebuild.runStep(argument);
+			runloop(result);
+		} catch (reason) {
+			if (reason == "empty processor" || reason == "request termination") {
+				console.log("Finished ");
+				rebuild.save();
+			} else
+				throw (reason);
 		}
 
+	}
 
-		runloop();
-
-	});
-
-
+	runloop();
 
 }
-
-
 
 main(process.argv);

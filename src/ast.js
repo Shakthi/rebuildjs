@@ -300,6 +300,7 @@ class functionExpression extends expression {
 			counter = paramno[i];
 		}
 
+}
 
 		counter++;
 
@@ -312,6 +313,7 @@ class functionExpression extends expression {
 		return counter;
 	}
 
+	
 
 	toPostFix(irStack) {
 		for (var i = 0; i < this.parameters.length; i++) {
@@ -447,7 +449,11 @@ class binaryExpression extends expression {
 	}
 
 	evaluate(context) {
+<<<<<<< HEAD
 
+=======
+		
+>>>>>>> Expression stack added
 		switch (this.operator) {
 			case '+':
 				return this.left.evaluate(context) + this.right.evaluate(context);

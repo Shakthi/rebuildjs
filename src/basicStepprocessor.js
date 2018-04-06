@@ -92,7 +92,7 @@ BasicStepProcessor.prototype.processStep = function (answer) {
 
 
 
-BasicStepProcessor.prototype.runStep = function () {
+BasicStepProcessor.prototype.runStep = async function () {
 
 	var self = this;
 	self.stepContext = {
@@ -101,33 +101,21 @@ BasicStepProcessor.prototype.runStep = function () {
 	};
 
 
-	return new Promise(function (resolve, reject) {
 
-		self.rebuild.getLine({
-			history: self.lineHistory,
-			prompt: self.setPrompt('rebuildx}'),
-			macros: self.macros
-		}).then(function (answer) {
-
-			try {
-
-				self.processStep(answer);
-
-			} catch (e) {
-
-				self.rebuild.console.log(e);
-			}
-
-			resolve();
-
-		}).catch(function (argument) {
-
-			reject(argument);
-		});
-
+	const answer = await self.rebuild.getLine({
+		history: self.lineHistory,
+		prompt: self.setPrompt('rebuildx}'),
+		macros: self.macros
 	});
 
+	try {
 
+		self.processStep(answer);
+
+	} catch (e) {
+
+		self.rebuild.console.log(e);
+	}
 
 };
 

@@ -22,8 +22,9 @@ export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcess
 		superVarTable: any,
 		private options: any) {
 
+			
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
-
+		
 		this.macros += "u";
 		this.mode = Mode.Undecided;
 		this.status = Status.Edit;

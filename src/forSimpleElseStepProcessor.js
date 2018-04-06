@@ -9,12 +9,6 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
         super(rebuild, statement, superVarTable, options);
         this.forStatement = statement;
     }
-    onEnter() {
-        super.onEnter();
-    }
-    onExit() {
-        super.onExit();
-    }
     initializeI() {
         var beginvalue = this.forStatement.fromExpression.evaluate(this.varTable);
         this.varTable.setEntry(this.forStatement.varName, beginvalue);
