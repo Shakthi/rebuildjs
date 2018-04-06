@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const superClass = require("./forIfElseStepProcessor");
 const Ast = require("./ast.js");
@@ -31,29 +39,28 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
         super.initialize();
     }
     runStep(argument) {
-        var that = this;
-        if (argument == stepProcessors.DeathReason.abort) {
-            this.status = superClass.Status.Edit;
-            this.lineHistory.historyIndex--;
-            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-        }
-        function runner(statement) {
-            if (statement instanceof Ast.DebuggerTrap) {
-                const debuggerTrapStatment = statement;
-                that.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
-                return {
-                    debuggerTrap: true
-                };
+        return __awaiter(this, void 0, void 0, function* () {
+            var that = this;
+            if (argument == stepProcessors.DeathReason.abort) {
+                this.status = superClass.Status.Edit;
+                this.lineHistory.historyIndex--;
+                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
             }
-            if (statement instanceof Ast.executableStatement) {
-                that.processStatement(statement);
+            function runner(statement) {
+                if (statement instanceof Ast.DebuggerTrap) {
+                    const debuggerTrapStatment = statement;
+                    that.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
+                    return {
+                        debuggerTrap: true
+                    };
+                }
+                if (statement instanceof Ast.executableStatement) {
+                    that.processStatement(statement);
+                }
             }
-        }
-        return new Promise((resolve) => {
             switch (this.status) {
                 case superClass.Status.Dead:
-                    resolve();
-                    break;
+                    return Promise.resolve();
                 case superClass.Status.Run:
                     if (this._isMature()) {
                         if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
@@ -70,7 +77,7 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
                                     this.markDead();
                                 }
                             }
-                            resolve();
+                            return Promise.resolve();
                         }
                         else {
                             const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
@@ -81,7 +88,7 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
                             else {
                                 this.lineHistory.historyIndex++;
                             }
-                            resolve();
+                            return Promise.resolve();
                         }
                     }
                     else {
@@ -96,7 +103,7 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
                                 this.status = superClass.Status.Dead;
                                 this.markDead();
                             }
-                            resolve();
+                            return Promise.resolve();
                         }
                         else {
                             const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
@@ -107,35 +114,31 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
                             else {
                                 this.lineHistory.historyIndex++;
                             }
-                            resolve();
+                            return Promise.resolve();
                         }
                     }
-                    break;
                 case superClass.Status.Edit:
                     this.stepContext = {
                         addToHistory: true
                     };
                     if (this._isMature()) {
-                        this.rebuild.getLine({
+                        const answer = yield this.rebuild.getLine({
                             history: this.lineHistory,
                             prompt: this.setPrompt("for " + this.forStatement.varName + "}"),
                             macros: this.macros
-                        }).then((answer) => {
-                            this.processStep(answer);
-                            resolve();
                         });
+                        this.processStep(answer);
+                        return Promise.resolve();
                     }
                     else {
-                        this.rebuild.getLine({
+                        const answer = this.rebuild.getLine({
                             history: this.lineHistory,
                             prompt: this.setPrompt("forelse }"),
                             macros: this.macros
-                        }).then((answer) => {
-                            this.processElseStatement(answer);
-                            resolve();
                         });
+                        this.processElseStatement(answer);
+                        return Promise.resolve();
                     }
-                    break;
                 default:
                     assert(false, "should not come here");
             }
