@@ -31,7 +31,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         return true; //For now allwyas validate 
     }
     initialize() {
-        this.loadFunctionDefinition(this.varTable.getEntry(this.functionStatement.name));
+        this.varTable.getEntry(this.functionStatement.name);
         this.initializeFormalParameter();
         this.mode = this.validateParamater() ? superClass.Mode.If : superClass.Mode.Else;
         super.initialize();
@@ -47,7 +47,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         var savedEntry = this.varTable.getEntry(this.functionStatement.name);
         if (!savedEntry) {
             this.rebuild.functionProcessorList.top()
-                .varTable.setEntry(this.functionStatement.name,this.functionStatement.clone());
+                .varTable.setEntry(this.functionStatement.name);
             savedEntry = this.varTable.getEntry(this.functionStatement.name);
         }
         savedEntry.subStatements = this.functionStatement.subStatements;

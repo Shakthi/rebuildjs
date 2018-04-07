@@ -8,6 +8,9 @@ const forModule = require('./forSimpleElseStepProcessor.js');
 
 const ifModule = require('./ifStepProcessor.js');
 
+const expressionModule = require('./ExpressionProcessor.js');
+
+
 const factory = {
 
 	createProcessorsPerSentence: function(sentence, rebuild, varTable,options) {
@@ -26,6 +29,10 @@ const factory = {
 		}
 
 		return null;
+	},
+
+	getExpressionProcessor :function(){
+		return expressionModule;
 	}
 }
 

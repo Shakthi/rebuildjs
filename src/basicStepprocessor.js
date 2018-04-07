@@ -9,6 +9,7 @@ const ast = require("./ast.js");
 
 
 
+
 function BasicStepProcessor(rebuild, history, superVarTable) {
 
 	stepProcessor.call(this, rebuild, history);
@@ -233,6 +234,68 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	}
 	else if (statement instanceof ast.returnStatement) {
 		this.markDead(stepProcessors.DeathReason.returned,statement.expression.evaluate(this.varTable));
+	}
+
+	else {
+		options.reloaded = this.stepContext.reusedSentence;
+		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
+		if (processor) {
+
+			this.rebuild.addNewProcessor(processor);
+
+		} else {
+
+			throw ("Failed to process sentence" + JSON.stringify(statement.toJson()));
+		}
+
+
+	}
+};
+
+BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression) {
+	let expressionProcessor = this.rebuild.processorFactory.getExpressionProcessor();
+	this.rebuild.addNewProcessor(new expressionProcessor(this.rebuild, expression, this.varTable, {}));
+	let value = yield;
+	return value;
+}
+
+BasicStepProcessor.prototype.processStatementAsync = function* (statement, options) {
+	if (!options) {
+		options = {};
+	}
+
+	if (statement instanceof ast.printStatement) {
+		var output = "";
+
+		for (var i = 0; i < statement.elements.length; i++) {
+
+			output += yield* this.evaluateExpressionAsync( statement.elements[i]);
+		}
+		this.rebuild.console.log(output);
+
+	} else if (statement instanceof ast.letStatement) {
+
+		this.varTable.setEntry(statement.varName,yield* this.evaluateExpressionAsync(statement.expression));
+
+	} else if (statement instanceof ast.endStatement) {
+
+		this.processEndStatement();
+
+	} else if (statement instanceof ast.errorStatement) {
+
+		this.rebuild.console.log("! " + statement.message);
+	} else if (statement instanceof ast.LineComment) {
+
+		this.rebuild.console.info(statement.message);
+
+	} else if (statement instanceof ast.DebuggerTrap) {
+
+		this.rebuild.console.info(statement.message);
+	}
+	else if (statement instanceof ast.PassStatement) {
+	}
+	else if (statement instanceof ast.returnStatement) {
+		this.markDead(stepProcessors.DeathReason.returned,yield* this.evaluateExpressionAsync(statement.expression));
 	}
 
 	else {

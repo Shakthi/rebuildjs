@@ -8,6 +8,8 @@ const readline = require('./readline.js');
 const testBed = require('./testBed.js');
 const SentenceHistory = require('./sentenceHistory.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
+const stepprocessors = require('./stepProcessor.js');
+
 const processorFactory = require('./processorFactory.js');
 const options = require('./options.js');
 const functionProcessor = require('./FunctionProcessor.js');
@@ -53,7 +55,7 @@ rebuild.runStep = async function (argument) {
 		throw ("empty processor");
 	}
 
-	await processorStack.last().runStep(argument);
+	const lastResult = await processorStack.last().runStep(argument);
 
 	var deathNote = null;
 	var result = null;
@@ -62,6 +64,10 @@ rebuild.runStep = async function (argument) {
 		deathNote = processorStack.last().deathReason;
 		result = processorStack.last().result;
 		rebuild.exitProcessing();
+	}else if(lastResult){
+
+		deathNote = stepprocessors.DeathReason.undead;
+		result = lastResult;
 	}
 
 	if (!rebuild.isAlive) {

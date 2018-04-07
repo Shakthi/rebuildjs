@@ -30,6 +30,8 @@ declare namespace BasicStepProcessor {
 		varTable: any;
 		processStep(a: answer): void;
 		processStatement(a: Ast.Statement): void;
+		processStatementAsync(a: Ast.Statement): IterableIterator<any>;
+		evaluateExpressionAsync(a: Ast.expression): IterableIterator<any>;
 		processByMacros(a: answer): answer;
 		
 		rebuild: any;

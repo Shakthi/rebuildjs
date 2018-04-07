@@ -20,7 +20,7 @@ var stepProcessor = function(rebuild, history) {
 };
 
 
-var DeathReason = new Enum(['unknown', 'normal', 'abort','returned']);
+var DeathReason = new Enum(['unknown', 'normal', 'abort','returned','undead',]);
 
 stepProcessor.prototype.onEnter = function() {
 
