@@ -231,6 +231,10 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	}
 	else if (statement instanceof ast.PassStatement) {
 	}
+	else if (statement instanceof ast.returnStatement) {
+		this.markDead(stepProcessors.DeathReason.returned,statement.expression.evaluate(this.varTable));
+	}
+
 	else {
 		options.reloaded = this.stepContext.reusedSentence;
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);

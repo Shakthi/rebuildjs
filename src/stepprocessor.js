@@ -4,7 +4,7 @@ var lineHistory = require('./history.js');
 const Enum = require('enum');
 
 
-var prompt = "";
+
 var stepProcessor = function(rebuild, history) {
 
 	this.rebuild = rebuild;
@@ -15,18 +15,19 @@ var stepProcessor = function(rebuild, history) {
 
 	this.isDead = false;
 	this.deathReason = DeathReason.unknown;
+	this.prompt = "";
 
 };
 
 
-var DeathReason = new Enum(['unknown', 'normal', 'abort']);
+var DeathReason = new Enum(['unknown', 'normal', 'abort','returned']);
 
 stepProcessor.prototype.onEnter = function() {
 
 };
 
 stepProcessor.prototype.getPrompt = function() {
-	return prompt;
+	return this.prompt;
 };
 
 
@@ -36,7 +37,7 @@ stepProcessor.prototype.getHistory = function() {
 
 
 stepProcessor.prototype.setPrompt = function(aprompt) {
-	prompt = aprompt;
+	this.prompt = aprompt;
 	return this.rebuild.setPrompt(aprompt);
 
 };

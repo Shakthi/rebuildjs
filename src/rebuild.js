@@ -10,6 +10,8 @@ const SentenceHistory = require('./sentenceHistory.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 const processorFactory = require('./processorFactory.js');
 const options = require('./options.js');
+const functionProcessor = require('./FunctionProcessor.js');
+
 
 
 
@@ -32,7 +34,7 @@ var rebuild = {};
 rebuild.options = options;
 
 
-
+rebuild.functionProcessorList = [];
 rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
 rebuild.isAlive = true;
@@ -48,7 +50,7 @@ rebuild.runStep = async function (argument) {
 	}
 
 	if (processorStack.length === 0) {
-		throw("empty processor");
+		throw ("empty processor");
 	}
 
 	await processorStack.last().runStep(argument);
@@ -102,6 +104,12 @@ rebuild.exitProcessing = function () {
 
 	promptManager.pop();
 	historyStack.pop();
+
+	var top = processorStack.top();
+	if (top instanceof functionProcessor) {
+		this.functionProcessorList.pop();
+	}
+
 	processorStack.top().onExit();
 
 	processorStack.pop();
@@ -113,6 +121,10 @@ rebuild.enterProcessing = function (argument) {
 
 	if (!processorStack.empty())
 		promptManager.push(processorStack.top().getPrompt());
+
+	if (argument instanceof functionProcessor) {
+		this.functionProcessorList.push(argument);
+	}
 
 	processorStack.push(argument);
 	historyStack.push(processorStack.top().getHistory());
@@ -137,7 +149,9 @@ rebuild.setPrompt = function (prompt) {
 rebuild.init = function (argv) {
 
 	this.testCommand = argv.testCommand;
-	this.addNewProcessor(new stepprocessor(rebuild, lineHistory));
+	var firstProcessor = new stepprocessor(rebuild, lineHistory);
+	this.addNewProcessor(firstProcessor);
+	this.functionProcessorList.push(firstProcessor);
 };
 
 

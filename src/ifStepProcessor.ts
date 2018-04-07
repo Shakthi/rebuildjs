@@ -23,6 +23,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 		superVarTable: any,
 		options: any) {
 		super(rebuild, statement, superVarTable, options);
+		this.setPrompt("if }");
 
 		this.initStatus = InitStatus.Idle;
 		this.ifStatement = statement;
@@ -55,6 +56,13 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 	async runStep(argument: any): Promise<void> {
 		//TODO:All this states need to be moved to coroutine
+
+		if (argument == stepProcessors.DeathReason.returned) {
+			this.status = superClass.Status.Edit;
+			this.lineHistory.historyIndex--;
+			this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+		}
+
 
 		switch (this.initStatus) {
 			case InitStatus.Idle:

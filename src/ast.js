@@ -172,6 +172,22 @@ class forStatement extends executableStatement {
 
 }
 
+class returnStatement extends executableStatement {
+	constructor(expression) {
+		super();
+		this.expression = expression;
+	}
+
+	toCode() {
+		var code = "return ";
+
+		code += this.expression.toCode();
+
+		//code += ";"
+		return code;
+	}
+
+}
 
 class printStatement extends executableStatement {
 
@@ -264,6 +280,18 @@ class expression extends Serializable {
 		return ast;
 	}
 
+
+
+	clone() {
+
+		const newObject = Object.create(this.constructor.prototype);
+		newObject.fromJson(this.toJson());
+
+		return newObject;
+
+	}
+
+
 }
 
 
@@ -300,7 +328,6 @@ class functionExpression extends expression {
 			counter = paramno[i];
 		}
 
-}
 
 		counter++;
 
@@ -313,7 +340,6 @@ class functionExpression extends expression {
 		return counter;
 	}
 
-	
 
 	toPostFix(irStack) {
 		for (var i = 0; i < this.parameters.length; i++) {
@@ -334,9 +360,9 @@ class functionExpression extends expression {
 	execute(context, stack) {
 		var argumentList = [];
 		for (var i = 0; i < this.parameters.length; i++) {
-			argumentList[i]=stack.pop();
+			argumentList[i] = stack.pop();
 		}
-		throw {type:'externalFunction',function:this,argumentList: argumentList};
+		throw { type: 'externalFunction', function: this, argumentList: argumentList };
 	}
 
 
@@ -417,17 +443,17 @@ class unaryExpression extends expression {
 
 	toPostFixCode(irStack) {
 		this.argument.toPostFixCode(irStack);
-		
+
 		if (this.operator == 'UMINUS') {
-			irStack.push(this);	
+			irStack.push(this);
 		}
-		
+
 	}
 
 	execute(context, stack) {
 		switch (this.operator) {
 			case 'UMINUS':
-				stack.push( -stack.pop());
+				stack.push(-stack.pop());
 				break;
 			case 'GROUP':
 			default:
@@ -449,11 +475,7 @@ class binaryExpression extends expression {
 	}
 
 	evaluate(context) {
-<<<<<<< HEAD
 
-=======
-		
->>>>>>> Expression stack added
 		switch (this.operator) {
 			case '+':
 				return this.left.evaluate(context) + this.right.evaluate(context);
@@ -696,6 +718,7 @@ ast.executableStatement = executableStatement;
 ast.ifStatement = ifStatement;
 ast.PassStatement = PassStatement;
 ast.functionExpression = functionExpression;
+ast.returnStatement = returnStatement;
 
 
 module.exports = ast;

@@ -20,7 +20,14 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
         }
         this.status = Status.Idle;
     }
+    onEnter() {
+        super.onEnter();
+        this.rebuild.setPrompt("");
+    }
     runStep(argument) {
+        if (argument.deathNote == stepProcessors.DeathReason.returned) {
+            this.execStack.push(argument.result);
+        }
         switch (this.status) {
             case Status.Idle://We start converting to 3 address notation
                 ////this.generate3Address(this.expression);
@@ -39,7 +46,7 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
                 }
                 catch (err) {
                     if (err.type == 'externalFunction') {
-                        var processor = new functionProcessors(this.rebuild, err.function, this.varTable, {});
+                        var processor = new functionProcessors(this.rebuild, err.function, this.varTable, err.argumentList, {});
                         this.rebuild.addNewProcessor(processor);
                     }
                 }

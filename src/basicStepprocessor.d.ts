@@ -34,7 +34,7 @@ declare namespace BasicStepProcessor {
 		
 		rebuild: any;
 		setPrompt(a: string): void;
-		markDead(a?:any): void;
+		markDead(a?:any,b?:any): void;
 		processCommand(a: Ast.Command): void;
 
 		stepContext: any;

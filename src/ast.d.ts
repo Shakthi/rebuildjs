@@ -101,6 +101,12 @@ declare namespace astNameSpace {
 
 	}
 
+	class returnStatement extends executableStatement {
+		constructor(expressio:expression)
+		expression:expression;
+	}
+	
+
 	class endStatement extends Statement {
 		constructor();
 	}

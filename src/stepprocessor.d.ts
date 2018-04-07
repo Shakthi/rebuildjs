@@ -8,7 +8,8 @@ declare namespace defaultSpace {
 
 	enum DeathReason {
 		abort,
-		normal
+		normal,
+		returned
 	}
 
 	class stepProcessor {

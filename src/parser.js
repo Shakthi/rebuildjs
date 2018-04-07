@@ -4,7 +4,7 @@ const JisonParser = require("jison").Parser;
 
 
 const basicStatmentFun = "\n" +
-    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to','pass']; \n" +
+    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to','pass','return']; \n" +
     "\n";
 
 
@@ -26,7 +26,7 @@ const grammar = {
         "rules": [
             ["^[ ]*\\#.*", " var array = yytext.split('#'); array.shift(); yytext= array.join('');   return 'COMMENT';"],
             ["^[ ]*\\.{letter}+", "var yytexTrimmed = yytext.trim(); yytext=yytexTrimmed.substring(1);  return 'COMMAND';"],
-            ["{letter}+", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
+            ["{letter}+{digit}*", "var yytexTrimmed = yytext.trim();  if(basicStatments.indexOf(yytexTrimmed)!= -1) return yytexTrimmed; else return 'identifier';  "],
             ['"(\\ .|[^"])*"', 'yytext=yytext.substring(1,yytext.length-1); return "STRING_LITERAL";'],
 
 
@@ -84,6 +84,8 @@ const grammar = {
             ["COMMAND EOF", "$$ = new yy.CustomCommand($1); return($$); "],
             ["COMMENT EOF", "$$ = new yy.LineComment($1); return($$); "],
             ["pass EOF", "$$ = new yy.PassStatement(); return($$); "],
+            ["return e EOF", "$$ = new yy.returnStatement($2); return($$); "],
+
 
 
 
@@ -114,6 +116,7 @@ const grammar = {
 
 
         "e": [
+
             ["e + e", "$$ =  new  yy.binaryExpression('+', $1,$3); "],
             ["e - e", "$$ = new  yy.binaryExpression('-', $1,$3);"],
             ["e * e", "$$ = new  yy.binaryExpression('*', $1,$3);"],
