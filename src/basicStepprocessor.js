@@ -91,6 +91,14 @@ BasicStepProcessor.prototype.processStep = function (answer) {
 	this.processSentence(sentence);
 };
 
+BasicStepProcessor.prototype.processStepAsync = function* (answer) {
+
+	answer = this.processByMacros(answer);
+	var sentence = this.processInput(answer);
+	yield * this.processSentenceAsync(sentence);
+};
+
+
 
 
 BasicStepProcessor.prototype.runStep = async function () {
@@ -252,10 +260,15 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	}
 };
 
-BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression) {
+BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression,_vartable) {
 	let expressionProcessor = this.rebuild.processorFactory.getExpressionProcessor();
-	this.rebuild.addNewProcessor(new expressionProcessor(this.rebuild, expression, this.varTable, {}));
+	let varTable = _vartable?_vartable:this.varTable;
+	this.rebuild.addNewProcessor(new expressionProcessor(this.rebuild, expression, varTable, {}));
+	//console.log(expression);
+	;
 	let value = yield;
+	if(expression.terminalValue && expression.terminalValue !=value)
+		debugger;
 	return value;
 }
 
@@ -339,6 +352,42 @@ BasicStepProcessor.prototype.processSentence = function (sentence) {
 		}
 
 		this.processStatement(sentence, {});
+	} else if (sentence instanceof ast.LineComment) {
+		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
+	} else {
+		throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
+	}
+
+	this.updateHistory(sentence);
+
+};
+
+
+BasicStepProcessor.prototype.processSentenceAsync = function* (sentence) {
+
+	if (sentence === null) {
+		this.rebuild.isAlive = false;
+		this.stepContext.addToHistory = false;
+
+	} else if (sentence instanceof ast.Command) {
+
+		try {
+			this.processCommand(sentence);
+		} catch (e) {
+			if (e != "Unknown command") {
+				throw (e);
+			}
+
+		}
+
+	} else if (sentence instanceof ast.Statement) {
+		if (sentence instanceof ast.DebuggerTrap) {
+			if (sentence.oldSentence) {
+				sentence = sentence.oldSentence;
+			}
+		}
+
+		yield * this.processStatementAsync(sentence, {});
 	} else if (sentence instanceof ast.LineComment) {
 		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	} else {

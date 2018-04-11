@@ -14,17 +14,19 @@ import assert = require('assert');
 
 export enum Mode { If, Else, Undecided };
 
-export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
+export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
 	mode: Mode;
 	status: Status;
+	stepIterater: Iterator<void> | Iterator<Promise<void>>;
+
 
 	constructor(rebuild: any, protected statement: Ast.ifStatementForIfElseStatement,
 		superVarTable: any,
 		private options: any) {
 
-			
+
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
-		
+
 		this.macros += "u";
 		this.mode = Mode.Undecided;
 		this.status = Status.Edit;
@@ -32,6 +34,7 @@ export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcess
 		if (!this.options) {
 			this.options = {};
 		}
+		this.stepIterater = this.runStepAsync();
 
 
 	}
@@ -53,7 +56,10 @@ export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcess
 		return this.options.debug === 'stepin';
 	}
 
-	
+	*runStepAsync(): IterableIterator<void> {
+
+	}
+
 
 	processEndStatement() {
 		this.status = Status.Run;
@@ -125,6 +131,34 @@ export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcess
 	}
 
 
+	runGenerater(argument: any): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			let result;
+			if (argument.deathNote == stepProcessors.DeathReason.normal) {
+				result = this.stepIterater.next(argument.result);
+			} else {
+				result = this.stepIterater.next();
+			}
+
+			if (result.value instanceof Promise) {
+				//resolve(result.value);
+				result.value.then((value) => {
+
+					this.stepIterater.next(value);
+					resolve();
+
+				}, (reason) => {
+					reject(reason);
+				})
+
+
+			} else {
+				resolve();
+			}
+
+		});
+
+	}
 
 
 
@@ -215,6 +249,93 @@ export  class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcess
 
 	}
 
+
+
+
+	protected *runner(statement: Ast.Statement) {
+
+		if (statement instanceof Ast.DebuggerTrap) {
+			const debuggerTrapStatment = statement as Ast.DebuggerTrap;
+			this.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
+			return {
+				debuggerTrap: true
+			};
+
+		}
+
+		if (statement instanceof Ast.executableStatement) {
+			yield* this.processStatementAsync(statement);
+		}
+
+		yield;
+
+	}
+
+	protected *runStepNegetiveAsync_RunState(): IterableIterator<any> {
+
+		yield * this.runStepPositiveAsync_RunState();
+		
+	}
+
+	protected *runStepPositiveAsync_RunState(): IterableIterator<any> {
+		while (this.lineHistory.historyIndex < this.lineHistory.writeHistoryIndex) {
+
+			const ret = yield* this.runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+			if (ret && ret.debuggerTrap) {
+
+				this.status = Status.Edit;
+				this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+
+				return;
+			}
+			else {
+				this.lineHistory.historyIndex++;
+			}
+
+			yield;
+		}
+		if (this.lineHistory.historyIndex == 0) {
+			this.rebuild.console.log("!!Edit please ");
+			this.status = Status.Edit;
+			this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+			return;
+		}
+	}
+
+	protected *runStepPositiveAsync_EditState():IterableIterator<any>{
+
+	}
+
+	
+	protected *runStepNegetiveAsync_EditState():IterableIterator<any>{
+
+	}
+
+
+
+	protected *runStepPositiveAsync(): IterableIterator<any> {
+		if (this.status == Status.Run) {
+			yield* this.runStepPositiveAsync_RunState();
+		}
+
+		if (this.status == Status.Edit) {
+			yield* this.runStepPositiveAsync_EditState();
+		}
+
+
+	}
+
+
+	* runStepNegetiveAsync(): IterableIterator<any> {
+		if (this.status == Status.Run) {
+			yield* this.runStepNegetiveAsync_RunState();
+		}
+
+		if (this.status == Status.Edit) {
+			yield* this.runStepNegetiveAsync_EditState();
+
+		}
+	}
 
 
 }

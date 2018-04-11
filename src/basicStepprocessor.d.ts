@@ -31,7 +31,8 @@ declare namespace BasicStepProcessor {
 		processStep(a: answer): void;
 		processStatement(a: Ast.Statement): void;
 		processStatementAsync(a: Ast.Statement): IterableIterator<any>;
-		evaluateExpressionAsync(a: Ast.expression): IterableIterator<any>;
+		evaluateExpressionAsync(a: Ast.expression,varTable?:any): IterableIterator<any>;
+		processStepAsync(a: answer): IterableIterator<any>;
 		processByMacros(a: answer): answer;
 		
 		rebuild: any;

@@ -32,8 +32,8 @@ class ExpressionProcessor extends stepProcessors.stepProcessor {
             case Status.Idle://We start converting to 3 address notation
                 ////this.generate3Address(this.expression);
                 var a = [];
-                this.expression.to3AdressCode(0, a);
-                this.rebuild.console.log(a);
+                //	this.expression.to3AdressCode(0, a);
+                //	this.rebuild.console.log(a);
                 this.expression.toPostFixCode(this.stackMachineCode);
                 this.status = Status.Execute;
                 return Promise.resolve();

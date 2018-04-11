@@ -31,6 +31,7 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
         if (!this.options) {
             this.options = {};
         }
+        this.stepIterater = this.runStepAsync();
     }
     onEnter() {
         super.onEnter();
@@ -44,6 +45,8 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
     }
     _isForced() {
         return this.options.debug === 'stepin';
+    }
+    *runStepAsync() {
     }
     processEndStatement() {
         this.status = Status.Run;
@@ -95,6 +98,29 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
     }
     processElseStatement(answer) {
         this.processStep(answer);
+    }
+    runGenerater(argument) {
+        return new Promise((resolve, reject) => {
+            let result;
+            if (argument.deathNote == stepProcessors.DeathReason.normal) {
+                result = this.stepIterater.next(argument.result);
+            }
+            else {
+                result = this.stepIterater.next();
+            }
+            if (result.value instanceof Promise) {
+                //resolve(result.value);
+                result.value.then((value) => {
+                    this.stepIterater.next(value);
+                    resolve();
+                }, (reason) => {
+                    reject(reason);
+                });
+            }
+            else {
+                resolve();
+            }
+        });
     }
     updateHistory(sentence) {
         if (this.stepContext.addToHistory) {
@@ -160,6 +186,62 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
         }
         else {
             //throw ("Failed to process sentence" + JSON.stringify(command.toJson()));
+        }
+    }
+    *runner(statement) {
+        if (statement instanceof Ast.DebuggerTrap) {
+            const debuggerTrapStatment = statement;
+            this.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
+            return {
+                debuggerTrap: true
+            };
+        }
+        if (statement instanceof Ast.executableStatement) {
+            yield* this.processStatementAsync(statement);
+        }
+        yield;
+    }
+    *runStepNegetiveAsync_RunState() {
+        yield* this.runStepPositiveAsync_RunState();
+    }
+    *runStepPositiveAsync_RunState() {
+        while (this.lineHistory.historyIndex < this.lineHistory.writeHistoryIndex) {
+            const ret = yield* this.runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
+            if (ret && ret.debuggerTrap) {
+                this.status = Status.Edit;
+                this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+                return;
+            }
+            else {
+                this.lineHistory.historyIndex++;
+            }
+            yield;
+        }
+        if (this.lineHistory.historyIndex == 0) {
+            this.rebuild.console.log("!!Edit please ");
+            this.status = Status.Edit;
+            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
+            return;
+        }
+    }
+    *runStepPositiveAsync_EditState() {
+    }
+    *runStepNegetiveAsync_EditState() {
+    }
+    *runStepPositiveAsync() {
+        if (this.status == Status.Run) {
+            yield* this.runStepPositiveAsync_RunState();
+        }
+        if (this.status == Status.Edit) {
+            yield* this.runStepPositiveAsync_EditState();
+        }
+    }
+    *runStepNegetiveAsync() {
+        if (this.status == Status.Run) {
+            yield* this.runStepNegetiveAsync_RunState();
+        }
+        if (this.status == Status.Edit) {
+            yield* this.runStepNegetiveAsync_EditState();
         }
     }
 }

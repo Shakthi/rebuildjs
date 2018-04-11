@@ -52,8 +52,32 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 
+	* runStepAsync():IterableIterator<void> {
+
+		this.postEvalinitialize( yield* this.evaluateExpressionAsync(this.ifStatement.condition,this.originalVarTable));
+		this.stepContext = {};
+		if (this.mode === superClass.Mode.If) {
+
+			yield* this.runStepPositiveAsync();
+
+		} else {
+
+			yield* this.runStepNegetiveAsync();
 
 
+		}
+		this.markDead();
+
+	}
+
+
+	runStep(argument: any): Promise<void> {
+		return this.runGenerater(argument);
+	}
+
+
+
+	/*
 	async runStep(argument: any): Promise<void> {
 		//TODO:All this states need to be moved to coroutine
 
@@ -215,7 +239,7 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 	}
-
+*/
 
 
 	updateHistory(sentence: Ast.Sentence) {
@@ -249,6 +273,54 @@ class ifStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 	}
+
+
+
+	 *runStepPositiveAsync_EditState(): IterableIterator<any> {
+		
+		do {
+			this.stepContext.addToHistory = true;
+
+			const answer: basicStepprocessor.answer = yield this.rebuild.getLine({
+				history: this.lineHistory,
+				prompt: this.setPrompt("if }"),
+				macros: this.macros
+			});
+
+			yield * this.processStepAsync(answer);
+
+			yield;
+		} while (this.status == superClass.Status.Edit);
+
+	}
+	
+	
+	
+
+	 *runStepNegetiveAsync_EditState(): IterableIterator<any>{
+
+
+		do {
+			this.stepContext.addToHistory = true;
+
+			const answer: basicStepprocessor.answer = yield this.rebuild.getLine({
+				history: this.lineHistory,
+				prompt: this.setPrompt("else }"),
+				macros: this.macros
+			});
+
+			yield * this.processStepAsync(answer);
+
+			
+		} while (this.status == superClass.Status.Edit);
+
+	}
+
+
+	
+	
+
+
 
 
 }

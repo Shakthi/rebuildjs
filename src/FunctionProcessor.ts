@@ -39,16 +39,13 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
     }
 
 
-    // getIValue() {
-    // 	return this.varTable.getEntry(this.functionStatement.varName);
-    // }
 
     validateParamater(): boolean {
 
         return true; //For now allwyas validate 
     }
 
-
+    
 
     initialize(): void {
 
@@ -93,8 +90,35 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
     }    
 
+    unarchiveStatement(val:boolean): void {
+        const savedEntry = this.varTable.getEntry(this.functionStatement.name);
+        if (savedEntry) {
+            this.loadFunctionDefinition(savedEntry);
+        }
+        super.unarchiveStatement(val);
+
+    }   
 
 
+	* runStepAsync():IterableIterator<void> {
+
+		this.stepContext = {};
+		if (this.mode === superClass.Mode.If) {
+
+			yield* this.runStepPositiveAsync();
+
+		} else {
+
+			yield* this.runStepNegetiveAsync();
+
+
+		}
+        this.markDead();
+
+	}
+
+
+    /*
 
     async runStep(argument: any): Promise<void> {
 
@@ -228,7 +252,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
 
 
-    }
+    }*/
 
 
 
