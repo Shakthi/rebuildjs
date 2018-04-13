@@ -9,10 +9,15 @@ const testBed = require('./testBed.js');
 const SentenceHistory = require('./sentenceHistory.js');
 const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 const stepprocessors = require('./stepProcessor.js');
+const ast = require('./ast.js');
+const vartable = require('./varTable.js');
+
 
 const processorFactory = require('./processorFactory.js');
 const options = require('./options.js');
 const functionProcessor = require('./FunctionProcessor.js');
+const mainFunctionProcessor = require('./MainFunctionProcessor.js');
+
 
 
 
@@ -155,7 +160,7 @@ rebuild.setPrompt = function (prompt) {
 rebuild.init = function (argv) {
 
 	this.testCommand = argv.testCommand;
-	var firstProcessor = new stepprocessor(rebuild, lineHistory);
+	var firstProcessor = new mainFunctionProcessor(this,this.lineHistory)
 	this.addNewProcessor(firstProcessor);
 	this.functionProcessorList.push(firstProcessor);
 };

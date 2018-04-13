@@ -65,6 +65,7 @@
         "src/forIfElseStepProcessor.ts",
         "src/forSimpleElseStepProcessor.ts",
         "src/FunctionProcessor.ts",
+        "src/MainFunctionProcessor.ts",
         "src/ExpressionProcessor.ts",
         "src/forElseStateStepProcessor"
     ]
