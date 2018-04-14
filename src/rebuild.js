@@ -1,3 +1,4 @@
+
 "use strict";
 require('./utils.js');
 
@@ -27,7 +28,7 @@ const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
-var nextProcessor = [];
+var nextProcessor = null; 
 
 const historyStack = [];
 
@@ -51,9 +52,9 @@ rebuild.runStep = async function (argument) {
 
 
 
-	if (!waitingProcessorStack.empty()) {
+	if (nextProcessor) {
 
-		rebuild.enterProcessing(waitingProcessorStack.shift());
+		rebuild.enterProcessing(nextProcessor);
 
 	}
 
