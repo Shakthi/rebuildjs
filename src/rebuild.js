@@ -11,6 +11,7 @@ const stepprocessor = require('./basicStepprocessor.js').BasicStepProcessor;
 const stepprocessors = require('./stepProcessor.js');
 const ast = require('./ast.js');
 const vartable = require('./varTable.js');
+const assert = require('assert');
 
 
 const processorFactory = require('./processorFactory.js');
@@ -26,7 +27,7 @@ const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
-const waitingProcessorStack = [];
+var nextProcessor = [];
 
 const historyStack = [];
 
@@ -106,8 +107,8 @@ rebuild.addHistoryEntry = function (entry, options) {
 
 
 rebuild.addNewProcessor = function (argument) {
-
-	waitingProcessorStack.push(argument);
+	assert(nextProcessor == null);
+	nextProcessor= argument;
 };
 
 rebuild.exitProcessing = function () {
