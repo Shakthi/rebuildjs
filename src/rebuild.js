@@ -55,6 +55,8 @@ rebuild.runStep = async function (argument) {
 	if (nextProcessor) {
 
 		rebuild.enterProcessing(nextProcessor);
+		nextProcessor = null;
+
 
 	}
 
@@ -109,7 +111,7 @@ rebuild.addHistoryEntry = function (entry, options) {
 
 rebuild.addNewProcessor = function (argument) {
 	assert(nextProcessor == null);
-	nextProcessor= argument;
+	nextProcessor = argument;
 };
 
 rebuild.exitProcessing = function () {
@@ -162,9 +164,9 @@ rebuild.setPrompt = function (prompt) {
 rebuild.init = function (argv) {
 
 	this.testCommand = argv.testCommand;
-	var firstProcessor = new mainFunctionProcessor(this,this.lineHistory)
+	historyStack.push(this.lineHistory);
+	var firstProcessor = new mainFunctionProcessor(this)
 	this.addNewProcessor(firstProcessor);
-	this.functionProcessorList.push(firstProcessor);
 };
 
 

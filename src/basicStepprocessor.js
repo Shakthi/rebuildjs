@@ -95,7 +95,7 @@ BasicStepProcessor.prototype.processStepAsync = function* (answer) {
 
 	answer = this.processByMacros(answer);
 	var sentence = this.processInput(answer);
-	yield * this.processSentenceAsync(sentence);
+	yield* this.processSentenceAsync(sentence);
 };
 
 
@@ -241,7 +241,7 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	else if (statement instanceof ast.PassStatement) {
 	}
 	else if (statement instanceof ast.returnStatement) {
-		this.markDead(stepProcessors.DeathReason.returned,statement.expression.evaluate(this.varTable));
+		this.markDead(stepProcessors.DeathReason.returned, statement.expression.evaluate(this.varTable));
 	}
 
 	else {
@@ -260,14 +260,43 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	}
 };
 
-BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression,_vartable) {
+
+BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression) {
+
+	var stackMachineCode = [];
+	var execStack = [];
+
+	expression.toPostFixCode(stackMachineCode);
+
+
+	do {
+		try {
+			stackMachineCode.shift().execute(this.varTable, execStack);
+		} catch (err) {
+			if (err.type == 'externalFunction') {
+				var processor = new functionProcessors(this.rebuild, err.function, this.varTable, err.argumentList, {});
+				this.rebuild.addNewProcessor(processor);
+			} else {
+				throw (err);
+			}
+		}
+		yield;
+	} while (stackMachineCode.length != 0);
+
+	return execStack.pop();
+
+}
+
+
+
+
+BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression, _vartable) {
 	let expressionProcessor = this.rebuild.processorFactory.getExpressionProcessor();
-	let varTable = _vartable?_vartable:this.varTable;
-	this.rebuild.addNewProcessor(new expressionProcessor(this.rebuild, expression, varTable, {}));
-	//console.log(expression);
-	;
-	let value = yield;
-	if(expression.terminalValue && expression.terminalValue !=value)
+	let varTable = _vartable ? _vartable : this.varTable;
+
+	let value = yield* this.expresionProcessorAsync(expression);
+
+	if (expression.terminalValue && expression.terminalValue != value)
 		debugger;
 	return value;
 }
@@ -282,13 +311,13 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 
 		for (var i = 0; i < statement.elements.length; i++) {
 
-			output += yield* this.evaluateExpressionAsync( statement.elements[i]);
+			output += yield* this.evaluateExpressionAsync(statement.elements[i]);
 		}
 		this.rebuild.console.log(output);
 
 	} else if (statement instanceof ast.letStatement) {
 
-		this.varTable.setEntry(statement.varName,yield* this.evaluateExpressionAsync(statement.expression));
+		this.varTable.setEntry(statement.varName, yield* this.evaluateExpressionAsync(statement.expression));
 
 	} else if (statement instanceof ast.endStatement) {
 
@@ -308,7 +337,7 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 	else if (statement instanceof ast.PassStatement) {
 	}
 	else if (statement instanceof ast.returnStatement) {
-		this.markDead(stepProcessors.DeathReason.returned,yield* this.evaluateExpressionAsync(statement.expression));
+		this.markDead(stepProcessors.DeathReason.returned, yield* this.evaluateExpressionAsync(statement.expression));
 	}
 
 	else {
@@ -387,7 +416,7 @@ BasicStepProcessor.prototype.processSentenceAsync = function* (sentence) {
 			}
 		}
 
-		yield * this.processStatementAsync(sentence, {});
+		yield* this.processStatementAsync(sentence, {});
 	} else if (sentence instanceof ast.LineComment) {
 		//throw ("Un recognised sentence" + JSON.stringify(sentence.toJson()));
 	} else {

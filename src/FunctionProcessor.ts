@@ -72,7 +72,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         var savedEntry = this.varTable.getEntry(this.functionStatement.name);
         if(!savedEntry){
             this.rebuild.functionProcessorList.top()
-                .varTable.setEntry(this.functionStatement.name);
+                .varTable.setEntry(this.functionStatement.name,this.functionStatement);
              savedEntry = this.varTable.getEntry(this.functionStatement.name);
         }
         
@@ -114,6 +114,29 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
 		}
         this.markDead();
+
+    }
+    
+
+    runStep(argument:any) {
+        return this.runGenerater(argument);
+    }
+
+	 *runStepPositiveAsync_EditState(): IterableIterator<any> {
+		
+		do {
+			this.stepContext.addToHistory = true;
+
+			const answer: basicStepprocessor.answer = yield this.rebuild.getLine({
+				history: this.lineHistory,
+				prompt: this.setPrompt(this.functionStatement.name +"}"),
+				macros: this.macros
+			});
+
+			yield * this.processStepAsync(answer);
+
+			yield;
+		} while (this.status == superClass.Status.Edit);
 
 	}
 
