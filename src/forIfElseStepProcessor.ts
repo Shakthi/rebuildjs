@@ -131,10 +131,14 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 	}
 
 
+	
+
+
 	runGenerater(argument: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let result;
-			if (argument && argument.deathNote == stepProcessors.DeathReason.normal) {
+			if (argument && (argument.deathNote == stepProcessors.DeathReason.normal||
+				argument.deathNote == stepProcessors.DeathReason.returned)) {
 				result = this.stepIterater.next(argument.result);
 			} else {
 				result = this.stepIterater.next();

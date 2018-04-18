@@ -10,6 +10,9 @@ const ifModule = require('./ifStepProcessor.js');
 
 const expressionModule = require('./ExpressionProcessor.js');
 
+const functionProcessor = require('./FunctionProcessor.js');
+
+
 
 const factory = {
 
@@ -25,6 +28,11 @@ const factory = {
 		} else if (sentence instanceof ast.ifStatement) {
 
 			return new ifModule.ifStepProcessor(rebuild, sentence, varTable,options);
+
+		}
+		else if (sentence instanceof ast.functionExpression) {
+
+			return  functionProcessor;
 
 		}
 

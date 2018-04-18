@@ -261,7 +261,14 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 };
 
 
-BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression) {
+BasicStepProcessor.prototype.callProcessorAsync = function*(processor){
+	this.rebuild.addNewProcessor(processor);
+	const responce = yield;
+	return responce; 
+}
+
+
+BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression, varTable) {
 
 	var stackMachineCode = [];
 	var execStack = [];
@@ -270,17 +277,15 @@ BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression) {
 
 
 	do {
-		try {
-			stackMachineCode.shift().execute(this.varTable, execStack);
-		} catch (err) {
-			if (err.type == 'externalFunction') {
-				var processor = new functionProcessors(this.rebuild, err.function, this.varTable, err.argumentList, {});
-				this.rebuild.addNewProcessor(processor);
-			} else {
-				throw (err);
-			}
+		var result = stackMachineCode.shift().execute(varTable, execStack);
+		if (result && result.type) {
+			var processor = this.rebuild.processorFactory.createProcessorsPerSentence(err.function);
+			responce = yield * this.callProcessorAsync(new processor(this.rebuild, err.function, this.varTable, err.argumentList, {}));
+		}else{
+			yield;
 		}
-		yield;
+
+		
 	} while (stackMachineCode.length != 0);
 
 	return execStack.pop();
@@ -294,7 +299,7 @@ BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression, _v
 	let expressionProcessor = this.rebuild.processorFactory.getExpressionProcessor();
 	let varTable = _vartable ? _vartable : this.varTable;
 
-	let value = yield* this.expresionProcessorAsync(expression);
+	let value = yield* this.expresionProcessorAsync(expression, varTable);
 
 	if (expression.terminalValue && expression.terminalValue != value)
 		debugger;
@@ -345,7 +350,9 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
 		if (processor) {
 
-			this.rebuild.addNewProcessor(processor);
+			var result =yield * this.callProcessorAsync(processor);
+			this.rebuild.console.log(result);
+			
 
 		} else {
 

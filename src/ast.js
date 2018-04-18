@@ -362,7 +362,7 @@ class functionExpression extends expression {
 		for (var i = 0; i < this.parameters.length; i++) {
 			argumentList[i] = stack.pop();
 		}
-		throw { type: 'externalFunction', function: this, argumentList: argumentList };
+		return { type: 'externalFunction', function: this, argumentList: argumentList };
 	}
 
 

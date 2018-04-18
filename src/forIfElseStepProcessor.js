@@ -102,7 +102,8 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
     runGenerater(argument) {
         return new Promise((resolve, reject) => {
             let result;
-            if (argument && argument.deathNote == stepProcessors.DeathReason.normal) {
+            if (argument && (argument.deathNote == stepProcessors.DeathReason.normal ||
+                argument.deathNote == stepProcessors.DeathReason.returned)) {
                 result = this.stepIterater.next(argument.result);
             }
             else {
