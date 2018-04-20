@@ -130,35 +130,25 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 		this.processStep(answer);
 	}
 
+	returnStep (result:any) {	
+		this.status = Status.Dead;
+		super.returnStep(result);
+    };
 
+    
 	
 
 
-	runGenerater(argument: any): Promise<void> {
-		return new Promise<void>((resolve, reject) => {
-			let result;
-			if (argument && (argument.deathNote == stepProcessors.DeathReason.normal||
-				argument.deathNote == stepProcessors.DeathReason.returned)) {
-				result = this.stepIterater.next(argument.result);
-			} else {
-				result = this.stepIterater.next();
-			}
+	runGenerater(argument: any): Promise<any> {
+		return new Promise<any>((resolve, reject) => {
 
-			if (result.value instanceof Promise) {
-				//resolve(result.value);
-				result.value.then((value) => {
+			let result = this.stepIterater.next(argument);
+            if (result.value instanceof Promise) {
+                result.value.then((promiseResult) => resolve(promiseResult))
+            } else {
+                resolve(result);
 
-					this.stepIterater.next(value);
-					resolve();
-
-				}, (reason) => {
-					reject(reason);
-				})
-
-
-			} else {
-				resolve();
-			}
+            }
 
 		});
 
@@ -253,7 +243,7 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 
 	}
 
-
+	
 
 
 	protected *runner(statement: Ast.Statement) {
@@ -268,10 +258,9 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 		}
 
 		if (statement instanceof Ast.executableStatement) {
-			yield* this.processStatementAsync(statement);
+			yield* this.processStatementAsync(statement,{});
 		}
 
-		yield;
 
 	}
 
@@ -340,6 +329,10 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 
 		}
 	}
+
+
+
+	
 
 
 }

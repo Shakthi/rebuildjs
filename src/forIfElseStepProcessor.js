@@ -99,27 +99,19 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
     processElseStatement(answer) {
         this.processStep(answer);
     }
+    returnStep(result) {
+        this.status = Status.Dead;
+        super.returnStep(result);
+    }
+    ;
     runGenerater(argument) {
         return new Promise((resolve, reject) => {
-            let result;
-            if (argument && (argument.deathNote == stepProcessors.DeathReason.normal ||
-                argument.deathNote == stepProcessors.DeathReason.returned)) {
-                result = this.stepIterater.next(argument.result);
-            }
-            else {
-                result = this.stepIterater.next();
-            }
+            let result = this.stepIterater.next(argument);
             if (result.value instanceof Promise) {
-                //resolve(result.value);
-                result.value.then((value) => {
-                    this.stepIterater.next(value);
-                    resolve();
-                }, (reason) => {
-                    reject(reason);
-                });
+                result.value.then((promiseResult) => resolve(promiseResult));
             }
             else {
-                resolve();
+                resolve(result);
             }
         });
     }
@@ -198,9 +190,8 @@ class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcessor {
             };
         }
         if (statement instanceof Ast.executableStatement) {
-            yield* this.processStatementAsync(statement);
+            yield* this.processStatementAsync(statement, {});
         }
-        yield;
     }
     *runStepNegetiveAsync_RunState() {
         yield* this.runStepPositiveAsync_RunState();

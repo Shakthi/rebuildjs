@@ -1,5 +1,6 @@
 "use strict";
 const superClass = require("./forIfElseStepProcessor");
+const Ast = require("./ast.js");
 require("./utils.js");
 class FunctionProcessor extends superClass.forIfElseStepProcessor {
     constructor(rebuild, statement, superVarTable, argumentList, options) {
@@ -60,7 +61,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         else {
             yield* this.runStepNegetiveAsync();
         }
-        this.markDead();
+        return this.getReturnStepValue();
     }
     runStep(argument) {
         return this.runGenerater(argument);
@@ -76,6 +77,37 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
             yield* this.processStepAsync(answer);
             yield;
         } while (this.status == superClass.Status.Edit);
+    }
+    *callProcessorAsync(processor) {
+        var result = yield* super.callProcessorAsync(processor);
+        if (processor instanceof FunctionProcessor) {
+            switch (result.type) {
+                case 'returnStatement':
+                    return result.value;
+                case 'thrown':
+                    break;
+                default:
+                    break;
+            }
+        }
+        else {
+            switch (result.type) {
+                case 'returnStatement':
+                    this.returnStep(result.value);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    *processStatementAsync(statement, options) {
+        if (statement instanceof Ast.endStatement) {
+            this.stepContext.addToHistory = false;
+            yield* super.processStatementAsync(new Ast.errorStatement("Function should end with return statement", statement.toCode(), "return value"), options);
+        }
+        else {
+            yield* super.processStatementAsync(statement, options);
+        }
     }
 }
 module.exports = FunctionProcessor;

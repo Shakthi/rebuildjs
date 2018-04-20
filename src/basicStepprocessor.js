@@ -191,11 +191,8 @@ BasicStepProcessor.prototype.processCommand = function (command) {
 };
 
 BasicStepProcessor.prototype.processEndStatement = function () {
-
-
-	this.markDead();
+	stepProcessor.prototype.returnStep.call(this,{ type: "endStatement", value: undefined })
 	this.stepContext.addToHistory = false;
-
 };
 
 BasicStepProcessor.prototype.stepInStatement = function (statement) {
@@ -241,7 +238,8 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 	else if (statement instanceof ast.PassStatement) {
 	}
 	else if (statement instanceof ast.returnStatement) {
-		this.markDead(stepProcessors.DeathReason.returned, statement.expression.evaluate(this.varTable));
+		this.returnStep(statement.expression.evaluate(this.varTable))
+
 	}
 
 	else {
@@ -261,10 +259,14 @@ BasicStepProcessor.prototype.processStatement = function (statement, options) {
 };
 
 
-BasicStepProcessor.prototype.callProcessorAsync = function*(processor){
+BasicStepProcessor.prototype.returnStep = function (result) {
+	stepProcessor.prototype.returnStep.call(this,{ type: "returnStatement", value: result })
+};
+
+BasicStepProcessor.prototype.callProcessorAsync = function* (processor) {
 	this.rebuild.addNewProcessor(processor);
 	const responce = yield;
-	return responce; 
+	return responce;
 }
 
 
@@ -279,13 +281,14 @@ BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression, va
 	do {
 		var result = stackMachineCode.shift().execute(varTable, execStack);
 		if (result && result.type) {
-			var processor = this.rebuild.processorFactory.createProcessorsPerSentence(err.function);
-			responce = yield * this.callProcessorAsync(new processor(this.rebuild, err.function, this.varTable, err.argumentList, {}));
-		}else{
+			var processor = this.rebuild.processorFactory.createProcessorsPerSentence(result.function);
+			var responce = yield* this.callProcessorAsync(new processor(this.rebuild, result.function, this.varTable, result.argumentList, {}));
+			execStack.push(responce);
+		} else {
 			yield;
 		}
 
-		
+
 	} while (stackMachineCode.length != 0);
 
 	return execStack.pop();
@@ -296,13 +299,12 @@ BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression, va
 
 
 BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression, _vartable) {
-	let expressionProcessor = this.rebuild.processorFactory.getExpressionProcessor();
+
 	let varTable = _vartable ? _vartable : this.varTable;
 
 	let value = yield* this.expresionProcessorAsync(expression, varTable);
 
-	if (expression.terminalValue && expression.terminalValue != value)
-		debugger;
+	
 	return value;
 }
 
@@ -342,7 +344,7 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 	else if (statement instanceof ast.PassStatement) {
 	}
 	else if (statement instanceof ast.returnStatement) {
-		this.markDead(stepProcessors.DeathReason.returned, yield* this.evaluateExpressionAsync(statement.expression));
+		this.returnStep(yield* this.evaluateExpressionAsync(statement.expression));
 	}
 
 	else {
@@ -350,9 +352,7 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
 		if (processor) {
 
-			var result =yield * this.callProcessorAsync(processor);
-			this.rebuild.console.log(result);
-			
+			var result = yield* this.callProcessorAsync(processor);
 
 		} else {
 

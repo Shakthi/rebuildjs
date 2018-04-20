@@ -30,7 +30,7 @@ declare namespace BasicStepProcessor {
 		varTable: any;
 		processStep(a: answer): void;
 		processStatement(a: Ast.Statement): void;
-		processStatementAsync(a: Ast.Statement): IterableIterator<any>;
+		processStatementAsync(a: Ast.Statement,options:any): IterableIterator<any>;
 		evaluateExpressionAsync(a: Ast.expression,varTable?:any): IterableIterator<any>;
 		processStepAsync(a: answer): IterableIterator<any>;
 		processByMacros(a: answer): answer;
@@ -38,7 +38,12 @@ declare namespace BasicStepProcessor {
 		rebuild: any;
 		setPrompt(a: string): void;
 		markDead(a?:any,b?:any): void;
+
 		processCommand(a: Ast.Command): void;
+		returnStep(result:any): any;
+		getReturnStepValue(): any;
+
+		callProcessorAsync(a:BasicStepProcessor):any;
 
 		stepContext: any;
 	}

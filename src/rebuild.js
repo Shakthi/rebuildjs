@@ -65,26 +65,25 @@ rebuild.runStep = async function (argument) {
 	}
 
 	const lastResult = await processorStack.last().runStep(argument);
-
-	var deathNote = null;
-	var result = null;
-
-	if (processorStack.last().isDead) {
-		deathNote = processorStack.last().deathReason;
-		result = processorStack.last().result;
+	
+	//Fall back for lazy one
+	if (typeof lastResult === 'undefined') {
+		return undefined;
+	}
+	
+	
+	if (typeof lastResult === 'object' && lastResult.done) {
 		rebuild.exitProcessing();
-	}else if(lastResult){
-
-		deathNote = stepprocessors.DeathReason.undead;
-		result = lastResult;
+		return (lastResult.value);
 	}
 
-	if (!rebuild.isAlive) {
-		throw ("request termination");
+	//We only route the result when moving between processor
+	if (typeof lastResult === 'object' && lastResult.done=== false) {
+		return undefined;
 	}
 
 
-	return ({ deathNote, result });
+	return lastResult; //Route simple vaules like we recieve from promise
 
 };
 

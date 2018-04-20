@@ -45,7 +45,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         return true; //For now allwyas validate 
     }
 
-    
+
 
     initialize(): void {
 
@@ -67,20 +67,19 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
     }
 
-    saveFunctionDefinition():void
-    {
+    saveFunctionDefinition(): void {
         var savedEntry = this.varTable.getEntry(this.functionStatement.name);
-        if(!savedEntry){
+        if (!savedEntry) {
             this.rebuild.functionProcessorList.top()
-                .varTable.setEntry(this.functionStatement.name,this.functionStatement);
-             savedEntry = this.varTable.getEntry(this.functionStatement.name);
+                .varTable.setEntry(this.functionStatement.name, this.functionStatement);
+            savedEntry = this.varTable.getEntry(this.functionStatement.name);
         }
-        
+
         savedEntry.subStatements = this.functionStatement.subStatements;
         savedEntry.negetiveSubStatements = this.functionStatement.negetiveSubStatements;
 
-        this.functionStatement.subStatements =[];
-        this.functionStatement.negetiveSubStatements =[];
+        this.functionStatement.subStatements = [];
+        this.functionStatement.negetiveSubStatements = [];
 
     }
 
@@ -88,194 +87,106 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
         super.archiveStatement();
         this.saveFunctionDefinition();
 
-    }    
+    }
 
-    unarchiveStatement(val:boolean): void {
+    unarchiveStatement(val: boolean): void {
         const savedEntry = this.varTable.getEntry(this.functionStatement.name);
         if (savedEntry) {
             this.loadFunctionDefinition(savedEntry);
         }
         super.unarchiveStatement(val);
 
-    }   
+    }
 
 
-	* runStepAsync():IterableIterator<void> {
+    * runStepAsync(): IterableIterator<void> {
 
-		this.stepContext = {};
-		if (this.mode === superClass.Mode.If) {
+        this.stepContext = {};
+        if (this.mode === superClass.Mode.If) {
 
-			yield* this.runStepPositiveAsync();
+            yield* this.runStepPositiveAsync();
 
-		} else {
+        } else {
 
-			yield* this.runStepNegetiveAsync();
+            yield* this.runStepNegetiveAsync();
 
 
-		}
-        this.markDead();
+        }
+        return this.getReturnStepValue();
 
     }
-    
 
-    runStep(argument:any) {
+
+    runStep(argument: any) {
         return this.runGenerater(argument);
     }
 
-	 *runStepPositiveAsync_EditState(): IterableIterator<any> {
-		
-		do {
-			this.stepContext.addToHistory = true;
+    *runStepPositiveAsync_EditState(): IterableIterator<any> {
 
-			const answer: basicStepprocessor.answer = yield this.rebuild.getLine({
-				history: this.lineHistory,
-				prompt: this.setPrompt(this.functionStatement.name +"}"),
-				macros: this.macros
-			});
+        do {
+            this.stepContext.addToHistory = true;
 
-			yield * this.processStepAsync(answer);
+            const answer: basicStepprocessor.answer = yield this.rebuild.getLine({
+                history: this.lineHistory,
+                prompt: this.setPrompt(this.functionStatement.name + "}"),
+                macros: this.macros
+            });
 
-			yield;
-		} while (this.status == superClass.Status.Edit);
+            yield* this.processStepAsync(answer);
 
-	}
+            yield;
+        } while (this.status == superClass.Status.Edit);
+
+    }
+
+    *callProcessorAsync(processor: basicStepprocessor.BasicStepProcessor): any {
 
 
-    /*
+        var result = yield* super.callProcessorAsync(processor);
 
-    async runStep(argument: any): Promise<void> {
+        if (processor instanceof FunctionProcessor) { //Return from another function
 
-        var that = this;
+            switch (result.type) {
+                case 'returnStatement':
+                    return result.value;
+                case 'thrown':
+                    break;
+                default:
+                    break;
+            }
 
-        if (argument == stepProcessors.DeathReason.abort) {
-            this.status = superClass.Status.Edit;
-            this.lineHistory.historyIndex--;
-            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-        }
+        } else { //Return Back from loop
 
-        if (argument.deathNote == stepProcessors.DeathReason.returned) {
-            this.status = superClass.Status.Dead;
-            this.markDead(stepProcessors.DeathReason.returned, argument.result);
-        }
+            switch (result.type) {
+                case 'returnStatement':
+                    this.returnStep(result.value);
+                    break;
 
-        function runner(statement: Ast.Statement) {
-
-            if (statement instanceof Ast.DebuggerTrap) {
-                const debuggerTrapStatment = statement as Ast.DebuggerTrap;
-                that.rebuild.console.log("!!Trapped - " + debuggerTrapStatment.message);
-                return {
-                    debuggerTrap: true
-                };
-
+                default:
+                    break;
             }
 
 
-
-            if (statement instanceof Ast.executableStatement) {
-                that.processStatement(statement);
-            }
-
         }
 
 
 
-        switch (this.status) {
-            case superClass.Status.Dead:
-                return Promise.resolve();
-            case superClass.Status.Run:
-                if (this._isMature()) {
-                    if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) {
-                        if (this.lineHistory.historyIndex == 0) {
-                            that.rebuild.console.log("!!Edit please ");
-                            this.status = superClass.Status.Edit;
-                            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-                        }
-                        else {
-                            this.status = superClass.Status.Dead;
-                            this.markDead();
-                        }
-                        return Promise.resolve();
-                    } else {
-
-                        const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-                        if (ret && ret.debuggerTrap) {
-                            this.status = superClass.Status.Edit;
-                            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-                        }
-                        else {
-                            this.lineHistory.historyIndex++;
-                        }
-                        return Promise.resolve();
-                    }
-                } else {
-
-                    ///This where we are entering when else part of the for subjuect to tun 
-                    if (this.lineHistory.historyIndex >= this.lineHistory.writeHistoryIndex) { //End of loop
-                        if (this.lineHistory.historyIndex == 0) { //Empty else part
-                            that.rebuild.console.log("!!Edit please ");
-                            this.status = superClass.Status.Edit;
-                            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-                        }
-                        else {
-                            this.status = superClass.Status.Dead;
-                            this.markDead();
-
-                        }
-                        return Promise.resolve();
-                    } else {
-
-                        const ret = runner(this.lineHistory.getContent()[this.lineHistory.historyIndex]);
-                        if (ret && ret.debuggerTrap) {
-                            this.status = superClass.Status.Edit;
-                            this.lineHistory.writeHistoryIndex = this.lineHistory.historyIndex;
-                        }
-                        else {
-                            this.lineHistory.historyIndex++;
-                        }
-                        return Promise.resolve();
-                    }
-
-                }
+    }
 
 
-            case superClass.Status.Edit:
+    *processStatementAsync(statement: Ast.Statement,options:any): IterableIterator<any>{
 
-                this.stepContext = {
-                    addToHistory: true
-                };
+        if (statement instanceof Ast.endStatement) {
 
-                if (this._isMature()) {
+            this.stepContext.addToHistory = false;
+             yield * super.processStatementAsync(new Ast.errorStatement("Function should end with return statement",statement.toCode(),"return value"),options);
 
-                    const answer: basicStepprocessor.answer = await this.rebuild.getLine({
-                        history: this.lineHistory,
-                        prompt: this.setPrompt("function " + this.functionStatement.name + "()"),
-                        macros: this.macros
-                    });
-
-                    this.processStep(answer);
-                    return Promise.resolve();
-
-
-                } else {
-
-                    const answer: basicStepprocessor.answer = this.rebuild.getLine({
-                        history: this.lineHistory,
-                        prompt: this.setPrompt("functionThrown "),
-                        macros: this.macros
-                    })
-
-                    this.processElseStatement(answer);
-                    return Promise.resolve();
-                }
-
-            default:
-                assert(false, "should not come here");
+    
+        } else{
+            yield * super.processStatementAsync(statement,options);
         }
 
-
-
-
-    }*/
+    }
 
 
 

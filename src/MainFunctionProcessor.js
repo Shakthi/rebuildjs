@@ -26,5 +26,14 @@ class MainFunctionProcessor extends FunctionProcessor {
             yield;
         } while (this.status == forIfElseStepProcessor.Status.Edit);
     }
+    *processStatementAsync(statement, options) {
+        if (statement instanceof Ast.endStatement) {
+            this.rebuild.console.log("Bye Bye");
+            this.returnStep(0);
+        }
+        else {
+            yield* super.processStatementAsync(statement, options);
+        }
+    }
 }
 module.exports = MainFunctionProcessor;

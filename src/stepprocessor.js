@@ -43,11 +43,16 @@ stepProcessor.prototype.setPrompt = function(aprompt) {
 };
 
 
-stepProcessor.prototype.markDead = function(deathReason = DeathReason.normal,result) {
-	this.isDead = true;
-	this.deathReason = deathReason;
-	this.result = result;
+
+stepProcessor.prototype.returnStep = function(result) {	
+	this.returnResult = result;
 };
+
+stepProcessor.prototype.getReturnStepValue = function(result) {	
+	return this.returnResult ;
+};
+
+
 
 
 stepProcessor.prototype.onExit = function() {

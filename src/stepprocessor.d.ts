@@ -23,6 +23,8 @@ declare namespace defaultSpace {
 		getHistory(): any;
 		setPrompt(aprompt: string): void;
 		markDead(deathReason: DeathReason,result?:any): void;
+		returnStep(result:any): any;
+		getReturnStepValue(): any;
 		onExit(): void;
 
 		runStep(argument:any):Promise<void>;
