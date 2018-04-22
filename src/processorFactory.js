@@ -4,13 +4,13 @@ const ast = require("./ast.js");
 const readModule = require('./readStepProcessor.js');
 //const forModule = require('./forStepProcessor.js');
 //const forModule = require('./forElseStepProcessor.js');
-const forModule = require('./forSimpleElseStepProcessor.js');
+const forModule = require('./forSimpleElseStepProcessor');
 
-const ifModule = require('./ifStepProcessor.js');
+const ifModule = require('./ifStepProcessor');
 
-const expressionModule = require('./ExpressionProcessor.js');
+const expressionModule = require('./ExpressionProcessor');
 
-const functionProcessor = require('./FunctionProcessor.js');
+const functionProcessor = require('./FunctionProcessor');
 
 
 
