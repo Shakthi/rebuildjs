@@ -28,7 +28,7 @@ const consolewrapper = require('./ConsoleWrapper.js');
 
 
 const processorStack = [];
-var nextProcessor = null; 
+var nextProcessor = null;
 
 const historyStack = [];
 
@@ -48,6 +48,12 @@ rebuild.lineHistory = lineHistory;
 rebuild.console = consolewrapper;
 rebuild.isAlive = true;
 
+//End of execution token
+rebuild.EOEToken = {
+	returnValue: undefined,
+	exitStatus: undefined
+};
+
 rebuild.runStep = async function (argument) {
 
 
@@ -60,27 +66,35 @@ rebuild.runStep = async function (argument) {
 
 	}
 
-	if (processorStack.length === 0) {
-		throw ("empty processor");
-	}
+
 
 	const lastResult = await processorStack.last().runStep(argument);
-	
+
 	//Fall back for lazy one
 	if (typeof lastResult === 'undefined') {
 		return undefined;
 	}
-	
-	
+
+
 	if (typeof lastResult === 'object' && lastResult.done) {
 		rebuild.exitProcessing();
-		return (lastResult.value);
+		if (processorStack.length === 0) {
+			this.EOEToken.returnValue = lastResult.value;
+			return this.EOEToken;
+		} else {
+			return (lastResult.value);
+		}
+
 	}
 
+
+
 	//We only route the result when moving between processor
-	if (typeof lastResult === 'object' && lastResult.done=== false) {
+	if (typeof lastResult === 'object' && lastResult.done === false) {
 		return undefined;
 	}
+
+
 
 
 	return lastResult; //Route simple vaules like we recieve from promise

@@ -15,14 +15,18 @@ async function main(args) {
 
 		try {
 			const result = await rebuild.runStep(argument);
-			runloop(result);
-		} catch (reason) {
-			if (reason == "empty processor" || reason == "request termination") {
-				console.log("Finished ");
+			if (result === rebuild.EOEToken) {
 				rebuild.save();
-			} else
-				throw (reason);
+				return console.log("Finished with", result.returnValue);
+			}
+			
+			runloop(result);
+
+
+		} catch (reason) {
+			throw (reason);
 		}
+
 
 	}
 
