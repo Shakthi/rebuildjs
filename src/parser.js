@@ -4,7 +4,7 @@ const JisonParser = require("jison").Parser;
 
 
 const basicStatmentFun = "\n" +
-    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to','pass','return']; \n" +
+    "    var basicStatments = ['print', 'let', 'read', 'if', 'for','end','to','pass','return','defun']; \n" +
     "\n";
 
 
@@ -45,6 +45,7 @@ const grammar = {
             ["\\>", "return '>'"],
             ["==", "return '=='"],
             ["\\=", "return '='"],
+            ["\\:", "return ':'"],
 
             ["$", "return 'EOF'"],
 
@@ -85,6 +86,9 @@ const grammar = {
             ["COMMENT EOF", "$$ = new yy.LineComment($1); return($$); "],
             ["pass EOF", "$$ = new yy.PassStatement(); return($$); "],
             ["return e EOF", "$$ = new yy.returnStatement($2); return($$); "],
+            ["defun identifier ( argList ) EOF", "$$ = new yy.functionDefine($2,$4); return($$); "],
+
+
 
 
 
@@ -102,7 +106,7 @@ const grammar = {
             ["es", "$$ = $1"]
         ],
 
-
+       
 
         "readStatement": [
             ["read STRING_LITERAL , readList", "$$=new yy.readStatement($4,$2);"],
@@ -112,6 +116,12 @@ const grammar = {
             ["identifier", "$$ = [ $1 ]"],
             ["readList , identifier", "$1.push($3); $$ = $1;"]
         ],
+
+        "readList": [
+            ["identifier", "$$ = [ $1 ]"],
+            ["readList , identifier", "$1.push($3); $$ = $1;"]
+        ],
+
 
 
 
@@ -136,16 +146,26 @@ const grammar = {
             ["paramList , param", "$1.push($3); $$ = $1;"]
         ],
 
+        "argList": [
+            ["arg", "$$ = [ $1 ]"],
+            ["argList , arg", "$1.push($3); $$ = $1;"]
+        ],
+
+        "arg": [
+            ["identifier : e ", "$$ = {id:$1,val:$3}"],
+            ["identifier : es ", "$$ = {id:$1,val:$3}"]
+        ],
+
         "param": [
             ["e", "$$ = $1"],
             ["es", "$$ = $1"]
         ],
 
-        "condition":[
-            [" e == e","$$ =  new  yy.binaryExpression('==', $1,$3); "],
-            [" e != e","$$ =  new  yy.binaryExpression('!=', $1,$3); "],
-            [" e > e","$$ =  new  yy.binaryExpression('>', $1,$3); "],
-            [" e < e","$$ =  new  yy.binaryExpression('<', $1,$3); "]
+        "condition": [
+            [" e == e", "$$ =  new  yy.binaryExpression('==', $1,$3); "],
+            [" e != e", "$$ =  new  yy.binaryExpression('!=', $1,$3); "],
+            [" e > e", "$$ =  new  yy.binaryExpression('>', $1,$3); "],
+            [" e < e", "$$ =  new  yy.binaryExpression('<', $1,$3); "]
         ],
 
 
@@ -160,7 +180,7 @@ const jisonParser = new JisonParser(grammar);
 jisonParser.yy = ast;
 
 const parser = {
-    parse: function(argument) {
+    parse: function (argument) {
         var result = null;
         try {
             result = jisonParser.parse(argument);
@@ -174,7 +194,7 @@ const parser = {
 
                     var expected = e.hash.expected;
                     message = 'ERROR, Expected:';
-                    expected.forEach(function(argument) {
+                    expected.forEach(function (argument) {
                         message += argument;
                         message += ',';
                     });

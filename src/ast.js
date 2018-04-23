@@ -269,6 +269,42 @@ class letStatement extends executableStatement {
 }
 
 
+
+class argument extends Serializable {
+
+	constructor(id,value){
+		super();
+		this.id =id;
+		this.value = value;		
+	}
+
+	factory() {
+		return ast;
+	}
+}
+
+class functionDefine extends executableStatement {
+
+	constructor(name, argumentList) {
+		super();
+		this.name = name;
+		this.argumentList = [];
+		argumentList.forEach((arg)=>{
+			this.argumentList.push(new argument(arg.id,arg.value));
+		});
+		
+	}
+
+
+	toCode() {
+		//var code = "let " + this.varName + " = " + this.expression.toCode();
+		return "";
+	}
+
+}
+
+
+
 class expression extends Serializable {
 
 
@@ -293,6 +329,9 @@ class expression extends Serializable {
 
 
 }
+
+
+
 
 
 class functionExpression extends expression {
@@ -713,6 +752,7 @@ ast.Command = Command;
 ast.LineComment = LineComment;
 ast.DebuggerTrap = DebuggerTrap;
 ast.Statement = Statement;
+ast.functionDefine = functionDefine;
 
 ast.executableStatement = executableStatement;
 ast.ifStatement = ifStatement;
