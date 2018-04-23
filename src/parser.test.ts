@@ -27,6 +27,7 @@ test('Test if function definintion statement parsed', function (t) {
 
     t.ok(parser.parser.parse('defun add(a :1,b:1)')  instanceof ast.functionDefine);
     t.ok(parser.parser.parse('defun add(a :1,b:2)') .argumentList[0].value instanceof ast.terminalExpression );
+    t.ok(parser.parser.parse('defun add(a :1,b:2+a)') .argumentList[1].value instanceof ast.binaryExpression );
 
     t.end();
 });
