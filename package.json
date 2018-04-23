@@ -21,6 +21,7 @@
     "gulp-util": "^3.0.8",
     "readline-ui": "^2.2.3",
     "simple-serial-js": "0.0.5",
+    "tape": "^4.9.0",
     "tern": "^0.21.0",
     "ts-node": "^5.0.1"
   },
