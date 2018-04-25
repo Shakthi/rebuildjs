@@ -152,8 +152,8 @@ const grammar = {
         ],
 
         "arg": [
-            ["identifier : e ", "$$ = {id:$1,val:$3}"],
-            ["identifier : es ", "$$ = {id:$1,val:$3}"]
+            ["identifier : e ", "$$ = new yy.argument($1,$3)"],
+            ["identifier : es ", "$$ = new yy.argument($1,$3)"]
         ],
 
         "param": [

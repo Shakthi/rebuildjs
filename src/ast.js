@@ -759,6 +759,7 @@ ast.ifStatement = ifStatement;
 ast.PassStatement = PassStatement;
 ast.functionExpression = functionExpression;
 ast.returnStatement = returnStatement;
+ast.argument = argument;
 
 
 module.exports = ast;
