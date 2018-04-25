@@ -76,11 +76,8 @@ declare namespace astNameSpace {
 	}
 
 
-
-	class ifStatement extends ifStatementForIfElseStatement {
-		constructor(condition: expression);
-		condition: expression;
-		
+	class functionDefine extends executableStatement {
+		constructor(name:string, argumentList:any[]);		
 	}
 
 

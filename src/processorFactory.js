@@ -11,6 +11,8 @@ const ifModule = require('./ifStepProcessor');
 const expressionModule = require('./ExpressionProcessor');
 
 const functionProcessor = require('./FunctionProcessor');
+const functionDefinition = require('./FunctionDefinitionProcessor ');
+
 
 
 
@@ -28,7 +30,8 @@ const factory = {
 			readStatement:readModule.readStepProcessor,
 			forStatement:forModule.forElseStepProcessor,
 			ifStatement:ifModule.ifStepProcessor,
-			functionExpression:functionProcessor
+			functionExpression:functionProcessor,
+			functionDefine:functionDefinition
 		};
 
 		for (const key in map) {
