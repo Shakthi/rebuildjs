@@ -281,7 +281,7 @@ BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression, va
 	do {
 		var result = stackMachineCode.shift().execute(varTable, execStack);
 		if (result && result.type) {
-			var processor = this.rebuild.processorFactory.createProcessorsPerSentence(result.function);
+			var processor = this.rebuild.processorFactory.getProcessorsConstructorPerSentence(result.function);
 			var responce = yield* this.callProcessorAsync(new processor(this.rebuild, result.function, this.varTable, result.argumentList, {}));
 			execStack.push(responce);
 		} else {

@@ -17,31 +17,36 @@ const functionProcessor = require('./FunctionProcessor');
 const factory = {
 
 	createProcessorsPerSentence: function(sentence, rebuild, varTable,options) {
-		if (sentence instanceof ast.readStatement) {
-
-			return new readModule.readStepProcessor(rebuild, sentence, varTable);
-
-		} else if (sentence instanceof ast.forStatement) {
-
-			return new forModule.forElseStepProcessor(rebuild, sentence, varTable,options);
-
-		} else if (sentence instanceof ast.ifStatement) {
-
-			return new ifModule.ifStepProcessor(rebuild, sentence, varTable,options);
-
-		}
-		else if (sentence instanceof ast.functionExpression) {
-
-			return  functionProcessor;
-
-		}
-
-		return null;
+		
+		const constuct= this.getProcessorsConstructorPerSentence(sentence);
+		return new constuct(rebuild, sentence, varTable,options);		
 	},
 
-	getExpressionProcessor :function(){
-		return expressionModule;
+	getProcessorsConstructorPerSentence :function(sentence){
+
+		var map = {
+			readStatement:readModule.readStepProcessor,
+			forStatement:forModule.forElseStepProcessor,
+			ifStatement:ifModule.ifStepProcessor,
+			functionExpression:functionProcessor
+		};
+
+		for (const key in map) {
+			if (map.hasOwnProperty(key)) {
+
+				const processor = map[key];
+
+				if (sentence instanceof ast[key]) {
+					return processor;
+				}
+
+			}
+		}
+
+		throw "Unexissting";		
 	}
+
+	
 }
 
 module.exports = factory;

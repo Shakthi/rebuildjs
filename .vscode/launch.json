@@ -32,6 +32,20 @@
 
 
 
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/ts-node/dist/bin.js",
+            "name": "Test case",
+            "args": [
+                "src/parser.test.ts"
+            ],            
+            "console":"internalConsole",
+            "cwd": "${workspaceFolder}",
+
+
+
         }
     ]
 }

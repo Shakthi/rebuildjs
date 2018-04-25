@@ -25,7 +25,6 @@ test('Test if function call statement parsed', function (t) {
 
 test('Test if function definintion statement parsed', function (t) {
 
-    console.log(parser.parser.parse('defun add(a :1,b:4)').argumentList[0].value);
     t.ok(parser.parser.parse('defun add(a :1,b:1)')  instanceof ast.functionDefine);
     t.ok(parser.parser.parse('defun add(a :1,b:2)') .argumentList[0].value instanceof ast.terminalExpression );
 
