@@ -49,7 +49,6 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
     initialize(): void {
 
-        this.varTable.getEntry(this.functionStatement.name);
         this.initializeFormalParameter();
         this.mode = this.validateParamater() ? superClass.Mode.If : superClass.Mode.Else;
         super.initialize();

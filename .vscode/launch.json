@@ -10,7 +10,7 @@
             "name": "Launch Program1",
             // "program": "${workspaceFolder}/node_modules/ts-node/dist/bin.js",
             "args": [
-                "src/main.js"
+                "src/main.js "
             ],
             "console":"externalTerminal",
             "cwd": "${workspaceFolder}",
@@ -26,6 +26,21 @@
             "name": "tsbode launch",
             "args": [
                 "src/main.js"
+            ],            
+            "console":"externalTerminal",
+            "cwd": "${workspaceFolder}",
+
+
+
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/ts-node/dist/bin.js",
+            "name": "tsbode command",
+            "args": [
+                "src/main.js",
+                "--testCommand=print max(1) "
             ],            
             "console":"externalTerminal",
             "cwd": "${workspaceFolder}",
