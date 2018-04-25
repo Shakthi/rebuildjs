@@ -231,7 +231,7 @@ BasicStepProcessor.prototype.callFunctionAsync = function* (functionExpression, 
 		});
 
 		let newdefun = new ast.functionDefine(functionExpression.name, argmentsListBuilt);
-		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(newdefun, this.rebuild, this.varTable, {}));
+		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(newdefun, this.rebuild, this.varTable, {onFlyCreate:true}));
 		this.rebuild.functionProcessorList.top()
 			.varTable.setEntry(functionExpression.name, newdefun);
 		return returnVal;

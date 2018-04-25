@@ -41,6 +41,13 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
                 this.varTable.setEntry(element.id, val);
             }
         }
+        else if(this.options.onFlyCreate){
+            for (let index = 0; index < this.functionStatement.argumentList.length; index++) {
+                const element = this.functionStatement.argumentList[index];
+                let val = element.value;
+                this.varTable.setEntry(element.id, val);
+            }
+        }
         else {
             for (let index = 0; index < this.functionStatement.argumentList.length; index++) {
                 const element = this.functionStatement.argumentList[index];
