@@ -17,10 +17,10 @@ async function main(args) {
 			const result = await rebuild.runStep(argument);
 			if (result === rebuild.EOEToken) {
 				rebuild.save();
-				return console.log("Finished with", result.returnValue);
+				 return result.returnValue;
 			}
 			
-			runloop(result);
+			return runloop(result);
 
 
 		} catch (reason) {
@@ -30,8 +30,16 @@ async function main(args) {
 
 	}
 
-	runloop();
+	const returnValue = await runloop();
+	if(require.main === module)
+		console.log("Finished with", returnValue);
+	else
+		return returnValue;
+
 
 }
 
-main(process.argv);
+if(require.main === module)
+ main(process.argv);
+
+ module.exports = main;

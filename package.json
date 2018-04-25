@@ -4,7 +4,7 @@
   "description": "Js version of c++ rebuild enviorment",
   "main": "main.js",
   "scripts": {
-    "test": "ts-node src/*test.ts",
+    "test": "ts-node src/main.test.ts",
     "watch": "webpack-cli --watch"
   },
   "keywords": [

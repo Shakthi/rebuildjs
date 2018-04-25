@@ -14,6 +14,7 @@ var index = 0;
 
 
 testreadline.init = function(ahistoryArray, atestreadlineFinishCallBack) {
+	index = 0;
 	historyArray = ahistoryArray.slice(0);
 	testreadlineFinishCallBack = atestreadlineFinishCallBack;
 
@@ -32,10 +33,11 @@ testreadline.getLine = function(options) {
 	historyCompleter.onEditEnd();
 
 	var ret = Promise.resolve({
-		line: historyArray[index++],
+		line: historyArray[index],
 		historyEdited: false,
 		bufferEdited: true
 	});
+	index++;
 	if (index >= historyArray.length) {
 		this.finished = true;
 		if (testreadlineFinishCallBack) {
