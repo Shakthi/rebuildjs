@@ -160,6 +160,10 @@ declare namespace astNameSpace {
 		name:string;
 	}
 
+	class ifStatement extends ifStatementForIfElseStatement {
+		condition:binaryExpression
+	}
+
 
 	class terminalExpression extends expression {
 
