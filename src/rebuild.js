@@ -17,8 +17,8 @@ const assert = require('assert');
 
 const processorFactory = require('./processorFactory.js');
 const options = require('./options.js');
-const functionProcessor = require('./FunctionProcessor');
-const mainFunctionProcessor = require('./MainFunctionProcessor');
+const functionProcessor = require('./FunctionProcessor.ts');
+const mainFunctionProcessor = require('./MainFunctionProcessor.ts');
 
 
 

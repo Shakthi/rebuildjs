@@ -292,6 +292,10 @@ class functionDefine extends executableStatement {
 		argumentList.forEach((arg)=>{
 			this.argumentList.push(new argument(arg.id,arg.value));
 		});
+
+		this.subStatements = [];
+		this.negetiveSubStatements = [];
+
 		
 	}
 
@@ -398,8 +402,8 @@ class functionExpression extends expression {
 
 	execute(context, stack) {
 		var argumentList = [];
-		for (var i = 0; i < this.parameters.length; i++) {
-			argumentList[i] = stack.pop();
+		for (var i = this.parameters.length; i >0; i--) {
+			argumentList[i-1] = stack.pop();
 		}
 		return { type: 'externalFunction', function: this, argumentList: argumentList };
 	}

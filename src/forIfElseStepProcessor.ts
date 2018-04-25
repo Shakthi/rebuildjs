@@ -22,7 +22,7 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 
 	constructor(rebuild: any, protected statement: Ast.ifStatementForIfElseStatement,
 		superVarTable: any,
-		private options: any) {
+		protected options: any) {
 
 
 		super(rebuild, new StackedSentenceHistory(rebuild.getHistoryStack()), superVarTable);
@@ -64,9 +64,10 @@ export class forIfElseStepProcessor extends basicStepprocessor.BasicStepProcesso
 	processEndStatement() {
 		this.status = Status.Run;
 		this.stepContext.addToHistory = false;
+		super.processEndStatement();
 	}
 
-
+	
 	initialize() {
 
 		this.unarchiveStatement(this.mode == Mode.If);//Evaluate

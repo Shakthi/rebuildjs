@@ -18,6 +18,20 @@
 
 
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/node_modules/ts-node/dist/bin.js",
+            "name": "Run program ",
+            "args": [
+                "src/main.js"
+            ],            
+            "console":"externalTerminal",
+            "cwd": "${workspaceFolder}",
+
+
+
+        },
 
         {
             "type": "node",
@@ -26,6 +40,7 @@
             "name": "tsbode launch",
             "args": [
                 "src/main.js"
+               ,"--testCommand=defun max(a:100,b:20); if a>b ; return a;  defun max(a:10,b:200)" 
             ],            
             "console":"externalTerminal",
             "cwd": "${workspaceFolder}",

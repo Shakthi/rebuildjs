@@ -32,7 +32,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
     initializeFormalParameter() {
 
         this.argumentList.forEach((element, index) => {
-            this.varTable.setEntry("argument" + index, element);
+            
         });
         this.varTable.setEntry("argumentLength", this.argumentList.length);
 
@@ -83,7 +83,7 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
     }
 
     archiveStatement(): void {
-        super.archiveStatement();
+       // super.archiveStatement();
         this.saveFunctionDefinition();
 
     }
@@ -143,8 +143,8 @@ class FunctionProcessor extends superClass.forIfElseStepProcessor {
 
         var result = yield* super.callProcessorAsync(processor);
 
-        if (processor instanceof FunctionProcessor) { //Return from another function
-
+        if (processor.constructor.name==  "FunctionProcessor" ||
+        processor.constructor.name==  "FunctionDefineProcessor" ) {
             switch (result.type) {
                 case 'returnStatement':
                     return result.value;

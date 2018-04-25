@@ -7,8 +7,8 @@ import stepProcessors = require('./stepprocessor.js');
 import StackedSentenceHistory = require('./StackedSentenceHistory.js');
 import assert = require('assert');
 import expressionProcessor = require('./ExpressionProcessor');
-import { resolve } from 'dns';
-import { Stats } from 'fs';
+
+const Status = superClass.Status;
 
 
 
@@ -184,8 +184,11 @@ class forElseStepProcessor extends superClass.forIfElseStepProcessor {
 
 
 		}
-		this.markDead();
 
+		if(this.status != Status.Dead){
+			this.processEndStatement();
+		}
+		return this.getReturnStepValue();
 	}
 
 	

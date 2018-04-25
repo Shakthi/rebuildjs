@@ -191,7 +191,7 @@ BasicStepProcessor.prototype.processCommand = function (command) {
 };
 
 BasicStepProcessor.prototype.processEndStatement = function () {
-	stepProcessor.prototype.returnStep.call(this,{ type: "endStatement", value: undefined })
+	stepProcessor.prototype.returnStep.call(this, { type: "endStatement", value: undefined })
 	this.stepContext.addToHistory = false;
 };
 
@@ -202,71 +202,66 @@ BasicStepProcessor.prototype.stepInStatement = function (statement) {
 	});
 };
 
-BasicStepProcessor.prototype.processStatement = function (statement, options) {
-	if (!options) {
-		options = {};
-	}
-
-	if (statement instanceof ast.printStatement) {
-		var output = "";
-
-		for (var i = 0; i < statement.elements.length; i++) {
-
-			output += statement.elements[i].evaluate(this.varTable);
-		}
-		this.rebuild.console.log(output);
-
-	} else if (statement instanceof ast.letStatement) {
-
-		this.varTable.setEntry(statement.varName, statement.expression.evaluate());
-
-	} else if (statement instanceof ast.endStatement) {
-
-		this.processEndStatement();
-
-	} else if (statement instanceof ast.errorStatement) {
-
-		this.rebuild.console.log("! " + statement.message);
-	} else if (statement instanceof ast.LineComment) {
-
-		this.rebuild.console.info(statement.message);
-
-	} else if (statement instanceof ast.DebuggerTrap) {
-
-		this.rebuild.console.info(statement.message);
-	}
-	else if (statement instanceof ast.PassStatement) {
-	}
-	else if (statement instanceof ast.returnStatement) {
-		this.returnStep(statement.expression.evaluate(this.varTable))
-
-	}
-
-	else {
-		options.reloaded = this.stepContext.reusedSentence;
-		const processor = this.rebuild.processorFactory.createProcessorsPerSentence(statement, this.rebuild, this.varTable, options);
-		if (processor) {
-
-			this.rebuild.addNewProcessor(processor);
-
-		} else {
-
-			throw ("Failed to process sentence" + JSON.stringify(statement.toJson()));
-		}
-
-
-	}
-};
 
 
 BasicStepProcessor.prototype.returnStep = function (result) {
-	stepProcessor.prototype.returnStep.call(this,{ type: "returnStatement", value: result })
+	stepProcessor.prototype.returnStep.call(this, { type: "returnStatement", value: result })
 };
 
 BasicStepProcessor.prototype.callProcessorAsync = function* (processor) {
 	this.rebuild.addNewProcessor(processor);
 	const responce = yield;
 	return responce;
+}
+
+
+
+BasicStepProcessor.prototype.callFunctionAsync = function* (functionExpression, argmentsList) {
+
+	var savedFunction = this.varTable.getEntry(functionExpression.name);
+	if (!savedFunction) {
+
+		var argmentsListBuilt = [];
+		argmentsList.forEach((arg, i) => {
+
+			var argobject = { id: "argument" + i, value: arg };
+			argmentsListBuilt.push(argobject);
+
+
+		});
+
+		let newdefun = new ast.functionDefine(functionExpression.name, argmentsListBuilt);
+		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(newdefun, this.rebuild, this.varTable, {}));
+		this.rebuild.functionProcessorList.top()
+			.varTable.setEntry(functionExpression.name, newdefun);
+		return returnVal;
+	} else {
+		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(savedFunction, this.rebuild,
+			this.varTable, { reloaded: true, paramater: argmentsList }));
+		return returnVal;
+	}
+
+
+}
+
+
+BasicStepProcessor.prototype.defineFunctionAsync = function* (functionDefineExpression) {
+
+	var savedFunction = this.varTable.getEntry(functionDefineExpression.name);
+	if (!savedFunction) {
+
+		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(functionDefineExpression, this.rebuild, this.varTable, {}));
+		this.rebuild.functionProcessorList.top()
+			.varTable.setEntry(functionDefineExpression.name, functionDefineExpression);
+		return returnVal;
+	} else {
+
+		let returnVal = yield* this.callProcessorAsync(this.rebuild.processorFactory.createProcessorsPerSentence(savedFunction, this.rebuild,
+			this.varTable, { redefined: true, paramater: functionDefineExpression.argumentList }));
+		return returnVal;
+	}
+
+
 }
 
 
@@ -281,8 +276,7 @@ BasicStepProcessor.prototype.expresionProcessorAsync = function* (expression, va
 	do {
 		var result = stackMachineCode.shift().execute(varTable, execStack);
 		if (result && result.type) {
-			var processor = this.rebuild.processorFactory.getProcessorsConstructorPerSentence(result.function);
-			var responce = yield* this.callProcessorAsync(new processor(this.rebuild, result.function, this.varTable, result.argumentList, {}));
+			var responce = yield* this.callFunctionAsync(result.function, result.argumentList, {});
 			execStack.push(responce);
 		} else {
 			yield;
@@ -304,7 +298,7 @@ BasicStepProcessor.prototype.evaluateExpressionAsync = function* (expression, _v
 
 	let value = yield* this.expresionProcessorAsync(expression, varTable);
 
-	
+
 	return value;
 }
 
@@ -340,6 +334,11 @@ BasicStepProcessor.prototype.processStatementAsync = function* (statement, optio
 	} else if (statement instanceof ast.DebuggerTrap) {
 
 		this.rebuild.console.info(statement.message);
+
+	} else if (statement instanceof ast.functionDefine) {
+		
+		yield * this.defineFunctionAsync(statement);
+		
 	}
 	else if (statement instanceof ast.PassStatement) {
 	}

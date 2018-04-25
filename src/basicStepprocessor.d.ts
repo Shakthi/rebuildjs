@@ -40,6 +40,7 @@ declare namespace BasicStepProcessor {
 		markDead(a?:any,b?:any): void;
 
 		processCommand(a: Ast.Command): void;
+		processEndStatement(): void;
 		returnStep(result:any): any;
 		getReturnStepValue(): any;
 
